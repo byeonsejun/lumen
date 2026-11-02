@@ -13,7 +13,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const product = getProduct((await params).slug);
-  return { title: product ? `${product.name} — NOCTURNE` : "NOCTURNE" };
+  return { title: product ? `${product.name} — LUMEN` : "LUMEN" };
 }
 
 export default async function ProductPage({ params }: { params: Params }) {

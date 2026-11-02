@@ -1,6 +1,6 @@
-# NOCTURNE — 3D 가구 쇼룸
+# LUMEN — 3D 가구 쇼룸
 
-**라이브:** https://nocturne-kohl-one.vercel.app
+**라이브:** https://lumen.vercel.app
 
 어두운 쇼룸에서 스포트라이트 아래의 가구를 3D 로 둘러보는 가구 쇼핑몰.
 스크롤하면 가구가 하나씩 조명 아래로 들어오고, 마지막엔 불이 켜지며 그 가구들이 놓인 방이 드러난다.

@@ -1,4 +1,4 @@
-# NOCTURNE 1차 — 쇼룸 · 상품 목록/상세 · 품질 자동 조절 · 배포 Implementation Plan
+# LUMEN 1차 — 쇼룸 · 상품 목록/상세 · 품질 자동 조절 · 배포 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js 16.4 · React 19.3 · TypeScript strict · Tailwind 4 · three 0.187 (`three/webgpu`, `three/tsl`) · @react-three/fiber 9.8 · @react-three/drei 10.7 · detect-gpu 5 · zustand · @gltf-transform 4.5 + meshoptimizer + sharp · Vitest 5 · Playwright 1.64
 
-**Spec:** `docs/superpowers/specs/2026-11-02-nocturne-design.md`
+**Spec:** `docs/superpowers/specs/2026-11-02-lumen-design.md`
 
 ## Global Constraints
 
@@ -95,7 +95,7 @@ docs/perf/phase1.md
   });
   ```
 - [ ] **Step 3:** `npm run test:e2e` → FAIL
-- [ ] **Step 4:** `layout.tsx` — `lang="ko"`, 토큰, 헤더(로고 `NOCTURNE` · `Shop` 링크 `/products`), 푸터 출처 문구 `3D assets: Poly Haven (polyhaven.com)`
+- [ ] **Step 4:** `layout.tsx` — `lang="ko"`, 토큰, 헤더(로고 `LUMEN` · `Shop` 링크 `/products`), 푸터 출처 문구 `3D assets: Poly Haven (polyhaven.com)`
 - [ ] **Step 5:** `npm run test:e2e` PASS · `npm run check` PASS
 - [ ] **Step 6:** 커밋 `chore: Next.js 16 뼈대 · 다크 레이아웃 · 출처 푸터`
 
@@ -240,7 +240,7 @@ docs/perf/phase1.md
   //  3. public/models/{id}/{res}.glb, 이미 있으면 건너뛴다 (--force 로 다시)
   //  4. public/models/manifest.json: { [id]: { '1k': bytes, '2k': bytes } }
   //  5. HDRI 하나(어두운 실내, 예: 'brown_photostudio_02' — 실제 존재 확인) 1k .hdr → public/hdri/studio_1k.hdr
-  //  요청 헤더 User-Agent: 'NOCTURNE-asset-build/1.0' (Poly Haven 요청)
+  //  요청 헤더 User-Agent: 'LUMEN-asset-build/1.0' (Poly Haven 요청)
   // models.ts
   modelUrl(id: string, res: '1k' | '2k'): string   // '/models/{id}/{res}.glb'
   posterUrl(id: string, width = 640): string       // 'https://cdn.polyhaven.com/asset_img/thumbs/{id}.png?width={width}'

@@ -75,7 +75,7 @@ function Overlay({ state, product }: { state: ShowroomState; product?: Product }
     >
       {state.phase === "intro" && (
         <div>
-          <p className="text-xs tracking-[0.3em] text-accent">NOCTURNE · 3D SHOWROOM</p>
+          <p className="text-xs tracking-[0.3em] text-accent">LUMEN · 3D SHOWROOM</p>
           <h1 className="mt-3 text-3xl font-light sm:text-5xl">빛이 머무는 자리</h1>
           <p className="mt-3 text-sm text-muted">스크롤해서 조명 아래의 가구를 만나 보세요</p>
         </div>

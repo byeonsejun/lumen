@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { CATEGORY_LABEL, getProducts, type Category } from "@/catalog/query";
 import { ProductCard } from "@/product/ProductCard";
 
-export const metadata: Metadata = { title: "Shop — NOCTURNE" };
+export const metadata: Metadata = { title: "Shop — LUMEN" };
 
 type SearchParams = Promise<{ category?: string | string[] }>;
 

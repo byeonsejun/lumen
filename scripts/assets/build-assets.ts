@@ -14,7 +14,7 @@ import sharp from "sharp";
 import { PRODUCTS } from "../../src/catalog/products";
 import { assetJobs, type AssetJob } from "./plan";
 
-const UA = { "User-Agent": "NOCTURNE-asset-build/1.0" };
+const UA = { "User-Agent": "LUMEN-asset-build/1.0" };
 const HDRI = { id: "brown_photostudio_02", out: "public/hdri/studio_1k.hdr" };
 const TEXTURE_SIZE = { "1k": 1024, "2k": 2048 } as const;
 /** 1k 가 2MB 를 넘는 모델은 1k 텍스처를 더 줄인다 (계획 Task 5: 첫 화면 지연 = 실패 조건) */
