@@ -39,6 +39,16 @@ async function initTier(search: URLSearchParams) {
   }
 }
 
+function afterFirstPaint(): Promise<void> {
+  const loaded = document.readyState === "complete" ? Promise.resolve() : new Promise<void>((r) => window.addEventListener("load", () => r(), { once: true }));
+  return loaded.then(
+    () =>
+      new Promise<void>((r) =>
+        "requestIdleCallback" in window ? requestIdleCallback(() => r(), { timeout: 1500 }) : setTimeout(r, 200),
+      ),
+  );
+}
+
 export function Stage3D({ poster, posterAlt, className, children }: Props) {
   const [cap, setCap] = useState<RenderCapability | null>(null);
   // ssr:false 로만 쓰므로 window 를 바로 읽는다
@@ -49,13 +59,14 @@ export function Stage3D({ poster, posterAlt, className, children }: Props) {
   useEffect(() => {
     const search = new URLSearchParams(window.location.search);
     let alive = true;
-    Promise.all([detectRenderCapability({ ...browserEnv(), force: forcedCapability(search) }), initTier(search)]).then(
+    // 3D 초기화(GPU 판정·렌더러·모델 디코딩)는 메인 스레드를 오래 잡는다 — 글자와 포스터가 먼저 그려지게 load 뒤 유휴 시간까지 미룬다
+    afterFirstPaint().then(() => { if (alive) void Promise.all([detectRenderCapability({ ...browserEnv(), force: forcedCapability(search) }), initTier(search)]).then(
       ([c]) => {
         if (!alive) return;
         if (c === "none") useQuality.getState().setBackend("none");
         setCap(c);
       },
-    );
+    ); });
     return () => {
       alive = false;
     };
