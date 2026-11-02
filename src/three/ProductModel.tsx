@@ -3,7 +3,7 @@
 import { Html } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, useState } from "react";
-import { Mesh, SRGBColorSpace, TextureLoader, type Group, type Object3D, type Texture } from "three";
+import { Box3, Mesh, SRGBColorSpace, TextureLoader, Vector3, type Group, type Object3D, type Texture } from "three";
 import { loadModel } from "./loadModel";
 import { modelUrl, posterUrl } from "./models";
 import { QUALITY_PRESETS } from "./quality/presets";
@@ -48,6 +48,10 @@ export function ProductModel({ id, onClick, castShadow = true }: Props) {
         o.receiveShadow = true;
       }
     });
+    // 모델마다 원점이 다르다(천장 조명은 윗부분) — 바닥 위 가운데로 맞춘다
+    const box = new Box3().setFromObject(clone);
+    const center = box.getCenter(new Vector3());
+    clone.position.set(-center.x, -box.min.y, -center.z);
     return clone;
   }, [loaded, castShadow]);
 

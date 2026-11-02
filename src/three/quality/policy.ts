@@ -23,3 +23,9 @@ export function nextTier(current: QualityTier, recent: FpsWindow[], ceiling: Qua
   }
   return current;
 }
+
+/** 시작 직후 창은 셰이더 컴파일·에셋 로딩으로 느리게 나온다 — 저사양으로 오판하지 않게 버린다 */
+export const WARMUP_WINDOWS = 2;
+export function acceptWindow(index: number): boolean {
+  return index >= WARMUP_WINDOWS;
+}

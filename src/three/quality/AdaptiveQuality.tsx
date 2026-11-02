@@ -2,14 +2,14 @@
 
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
-import { nextTier } from "./policy";
+import { acceptWindow, nextTier } from "./policy";
 import { useQuality } from "./store";
 
 const WINDOW_MS = 1000;
 
 /** 1초 창마다 평균 fps 를 재서 품질 단계를 조절한다 */
 export function AdaptiveQuality() {
-  const acc = useRef({ frames: 0, start: 0 });
+  const acc = useRef({ frames: 0, start: 0, index: 0 });
   useFrame(() => {
     const now = performance.now();
     const a = acc.current;
@@ -18,9 +18,14 @@ export function AdaptiveQuality() {
     const elapsed = now - a.start;
     if (elapsed < WINDOW_MS) return;
     const s = useQuality.getState();
-    s.pushFps({ avgFps: ((a.frames - 1) * 1000) / elapsed, durationMs: elapsed });
+    const avgFps = ((a.frames - 1) * 1000) / elapsed;
     a.frames = 1;
     a.start = now;
+    if (!acceptWindow(a.index++)) {
+      useQuality.setState({ fps: Math.round(avgFps) }); // HUD 에는 보이되 판단엔 안 쓴다
+      return;
+    }
+    s.pushFps({ avgFps, durationMs: elapsed });
     if (!s.adaptive) return;
     const { windows, tier, ceiling } = useQuality.getState();
     const next = nextTier(tier, windows, ceiling);

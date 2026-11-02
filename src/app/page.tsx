@@ -1,5 +1,6 @@
-import { HomeStage } from "@/home/HomeStage";
+import { getFeatured } from "@/catalog/query";
+import { Showroom } from "@/showroom/Showroom";
 
 export default function Home() {
-  return <HomeStage />;
+  return <Showroom products={getFeatured()} />;
 }

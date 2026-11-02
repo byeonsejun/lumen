@@ -29,3 +29,10 @@ describe("QUALITY_PRESETS", () => {
     expect(QUALITY_PRESETS[0]).toEqual({ dpr: [1, 1], shadows: false, shadowMapSize: 512, bloom: false, ao: false, assetRes: "1k" }));
   it("high 는 2k 와 AO", () => expect(QUALITY_PRESETS[2]).toMatchObject({ dpr: [1, 2], ao: true, assetRes: "2k", shadowMapSize: 2048 }));
 });
+
+describe("acceptWindow", () => {
+  it("시작 직후 두 창(셰이더 컴파일·에셋 로딩)은 판단에 쓰지 않는다", async () => {
+    const { acceptWindow } = await import("@/three/quality/policy");
+    expect([0, 1, 2, 3].map(acceptWindow)).toEqual([false, false, true, true]);
+  });
+});

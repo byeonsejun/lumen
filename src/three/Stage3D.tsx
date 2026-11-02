@@ -73,7 +73,7 @@ export function Stage3D({ poster, posterAlt, className, children }: Props) {
           data-testid="stage-canvas"
           gl={createRenderer(cap)}
           dpr={preset.dpr}
-          shadows={preset.shadows}
+          shadows={preset.shadows ? "percentage" : false}
           onCreated={(state) => useQuality.getState().setBackend(rendererBackend(state.gl))}
         >
           <AdaptiveQuality />
