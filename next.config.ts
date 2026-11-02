@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
-  images: { remotePatterns: [new URL("https://cdn.polyhaven.com/asset_img/**")] },
+  images: { remotePatterns: [{ protocol: "https", hostname: "cdn.polyhaven.com", pathname: "/asset_img/**" }] },
   partialPrefetching: true,
   turbopack: {
     rules: {
