@@ -37,3 +37,13 @@ test("렌더링 불가 환경에서도 쇼룸 정보는 읽힌다", async ({ pag
   await scrollToSegment(page, 1.5);
   await expect(page.getByTestId("showroom-overlay")).toContainText(featured[0].name);
 });
+
+test("끝까지 스크롤하면 방을 둘러보고, 가구를 누르면 상세로 간다", async ({ page }) => {
+  await page.goto("/");
+  await scrollToSegment(page, segments);
+  await expect(page.getByTestId("showroom-explore")).toBeVisible();
+  await expect(page.getByRole("button", { name: /내 방에 놓아 보기/ })).toBeDisabled();
+  const target = featured[1];
+  await page.getByTestId(`room-hotspot-${target.slug}`).click();
+  await expect(page).toHaveURL(new RegExp(`/products/${target.slug}$`));
+});

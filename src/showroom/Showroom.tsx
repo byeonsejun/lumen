@@ -19,6 +19,8 @@ export function Showroom({ products }: { products: Product[] }) {
   const progress = useRef(0);
   const [state, setState] = useState<ShowroomState>({ phase: "intro", t: 0 });
   const [reducedMotion, setReducedMotion] = useState(false);
+  // Showroom 은 클라이언트에서만 의미가 있다 — 서버에선 false
+  const [touch] = useState(() => typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches);
   const segments = showroomSegments(products.length);
 
   useEffect(() => {
@@ -56,7 +58,7 @@ export function Showroom({ products }: { products: Product[] }) {
     <section ref={section} data-testid="showroom" className="relative" style={{ height: `${segments * 100}svh` }}>
       <div className="sticky top-0 h-svh overflow-hidden">
         <Stage3D poster={posterUrl(products[0].polyhavenId, 1024)} posterAlt={products[0].name} className="h-full w-full">
-          <ShowroomScene products={products} progress={progress} reducedMotion={reducedMotion} />
+          <ShowroomScene products={products} progress={progress} phase={state.phase} reducedMotion={reducedMotion} touch={touch} />
         </Stage3D>
         <Overlay state={state} product={current} />
       </div>
@@ -95,9 +97,19 @@ function Overlay({ state, product }: { state: ShowroomState; product?: Product }
       )}
       {state.phase === "reveal" && <h2 className="text-2xl font-light sm:text-4xl">한 방에 모아 보면</h2>}
       {state.phase === "explore" && (
-        <div data-testid="showroom-explore">
-          <h2 className="text-2xl font-light sm:text-4xl">가구를 눌러 자세히 보세요</h2>
-        </div>
+        <>
+          <div data-testid="showroom-explore">
+            <h2 className="text-2xl font-light sm:text-4xl">가구를 눌러 자세히 보세요</h2>
+            <p className="mt-2 text-sm text-muted">드래그해서 방을 둘러볼 수 있어요</p>
+          </div>
+          <button
+            type="button"
+            disabled
+            className="pointer-events-auto shrink-0 rounded-full border border-fg/20 px-4 py-2 text-sm text-muted disabled:cursor-not-allowed"
+          >
+            내 방에 놓아 보기 (준비 중)
+          </button>
+        </>
       )}
     </div>
   );
