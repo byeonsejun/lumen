@@ -41,13 +41,13 @@ async function initTier(search: URLSearchParams) {
 
 export function Stage3D({ poster, posterAlt, className, children }: Props) {
   const [cap, setCap] = useState<RenderCapability | null>(null);
-  const [debug, setDebug] = useState(false);
+  // ssr:false 로만 쓰므로 window 를 바로 읽는다
+  const [debug] = useState(() => new URLSearchParams(window.location.search).has("debug"));
   const tier = useQuality((s) => s.tier);
   const preset = QUALITY_PRESETS[tier];
 
   useEffect(() => {
     const search = new URLSearchParams(window.location.search);
-    setDebug(search.has("debug"));
     let alive = true;
     Promise.all([detectRenderCapability({ ...browserEnv(), force: forcedCapability(search) }), initTier(search)]).then(
       ([c]) => {
