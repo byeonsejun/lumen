@@ -1,3 +1,5 @@
+import { HomeStage } from "@/home/HomeStage";
+
 export default function Home() {
-  return <section className="grid min-h-svh place-items-center text-muted">NOCTURNE</section>;
+  return <HomeStage />;
 }
