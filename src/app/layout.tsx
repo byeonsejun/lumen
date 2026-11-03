@@ -38,6 +38,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             Poly Haven (polyhaven.com)
           </a>
           {" · "}CC0
+          {" · "}
+          <Link href="/privacy" className="underline hover:text-fg">
+            개인정보처리방침
+          </Link>
         </footer>
         <CartToast />
         </Providers>
