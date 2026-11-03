@@ -22,7 +22,10 @@ test("카드는 이름·가격을 보여주고 상세로 간다", async ({ page 
 
 test("카드 썸네일이 실제로 로드된다", async ({ page }) => {
   await page.goto("/products");
-  const img = page.getByTestId("product-card").first().locator("img");
+  // 목록은 Suspense 로 스트리밍된다 — 숨겨진 임시 영역에서 제자리로 옮겨진 뒤(보일 때)에 잡는다
+  const card = page.getByTestId("product-card").first();
+  await expect(card).toBeVisible();
+  const img = card.locator("img");
   await img.scrollIntoViewIfNeeded();
   await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth)).toBeGreaterThan(0);
 });
