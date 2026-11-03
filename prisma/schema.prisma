@@ -1,0 +1,78 @@
+// LUMEN 2차 — 회원 · 장바구니 · 주문. 상품은 DB 에 없다(src/catalog). 가격은 서버가 카탈로그로 다시 계산한다
+// 일시는 timestamptz
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AuthProvider {
+  KAKAO
+  GOOGLE
+  DEMO
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+model User {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  provider       AuthProvider
+  providerUserId String
+  name           String?
+  createdAt      DateTime     @default(now()) @db.Timestamptz
+  cartItems      CartItem[]
+  orders         Order[]
+
+  @@unique([provider, providerUserId])
+  @@index([provider, createdAt])
+}
+
+model CartItem {
+  userId      String   @db.Uuid
+  productSlug String
+  quantity    Int
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, productSlug])
+}
+
+model Order {
+  /// 토스 orderId 겸용 — "LM" + 영숫자 20자
+  id               String      @id
+  userId           String      @db.Uuid
+  status           OrderStatus @default(PENDING)
+  totalKRW         Int
+  orderName        String
+  recipientName    String
+  recipientPhone   String
+  recipientAddress String
+  paymentKey       String?
+  method           String?
+  paidAt           DateTime?   @db.Timestamptz
+  createdAt        DateTime    @default(now()) @db.Timestamptz
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items            OrderItem[]
+
+  @@index([userId, status, createdAt])
+}
+
+model OrderItem {
+  id               String @id @default(uuid(7)) @db.Uuid
+  orderId          String
+  productSlug      String
+  nameSnapshot     String
+  priceSnapshotKRW Int
+  quantity         Int
+  order            Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
