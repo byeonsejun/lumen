@@ -10,7 +10,14 @@ import { initialTier } from "./quality/policy";
 import { QUALITY_PRESETS, type QualityTier } from "./quality/presets";
 import { useQuality } from "./quality/store";
 
-type Props = { poster: string; posterAlt: string; className?: string; children: ReactNode };
+type Props = {
+  poster: string;
+  posterAlt: string;
+  className?: string;
+  children: ReactNode;
+  /** 렌더링이 안 될 때 포스터 대신 보여 줄 것. null 이면 아무것도 그리지 않는다 */
+  fallback?: ReactNode;
+};
 
 function parseTier(v: string | null): QualityTier | undefined {
   return v === "0" || v === "1" || v === "2" ? (Number(v) as QualityTier) : undefined;
@@ -49,7 +56,7 @@ function afterFirstPaint(): Promise<void> {
   );
 }
 
-export function Stage3D({ poster, posterAlt, className, children }: Props) {
+export function Stage3D({ poster, posterAlt, className, children, fallback }: Props) {
   const [cap, setCap] = useState<RenderCapability | null>(null);
   // ssr:false 로만 쓰므로 window 를 바로 읽는다
   const [debug] = useState(() => new URLSearchParams(window.location.search).has("debug"));
@@ -73,6 +80,7 @@ export function Stage3D({ poster, posterAlt, className, children }: Props) {
   }, []);
 
   if (cap === "none") {
+    if (fallback !== undefined) return <>{fallback}</>;
     // eslint-disable-next-line @next/next/no-img-element
     return <img data-testid="stage-fallback" src={poster} alt={posterAlt} className={`${className ?? ""} object-contain`} />;
   }

@@ -236,6 +236,7 @@ export function ShowroomScene({
         >
           <ProductModel
             id={p.polyhavenId}
+            dimensionsMm={p.dimensionsMm}
             onClick={
               exploring ? () => router.push(`/products/${p.slug}`) : undefined
             }

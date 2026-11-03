@@ -69,7 +69,7 @@ export function ViewerScene({ product, showDims }: { product: Product; showDims:
         <meshStandardMaterial color="#1c1814" roughness={0.85} />
       </mesh>
       <group position-y={product.category === "lighting" ? 0 : 0}>
-        <ProductModel id={product.polyhavenId} />
+        <ProductModel id={product.polyhavenId} dimensionsMm={product.dimensionsMm} />
       </group>
       {showDims && <Dimensions w={w} h={h} d={d} mm={product.dimensionsMm} />}
       <OrbitControls
