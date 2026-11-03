@@ -131,7 +131,14 @@ export function useCart() {
     focused: server.focused,
     lastAdded: server.lastAdded,
     focus: (slug: string | null) => useServerCart.setState({ focused: slug }),
+    /**
+     * 로그인 여부를 아직 모르는 순간(페이지를 연 직후 0.1~0.3초)에는 담지 않는다.
+     * 이때 담으면 로그인 상태인데도 브라우저 장바구니로 들어가고, 뒤이은 합치기가 끊기면
+     * 다음 페이지에서 한 번 더 합쳐져 수량이 두 배가 됐다
+     */
+    ready: auth !== "loading",
     add(slug: string, qty = 1) {
+      if (auth === "loading") return;
       useServerCart.setState({ lastAdded: Date.now() });
       if (!signedIn) return guest.add(slug, qty);
       optimistic(slug, addLine(server.lines, slug, qty), () => addToCartAction(slug, qty));

@@ -10,7 +10,7 @@ const STYLE = {
 export function AddToCartButton({ slug, qty = 1, variant = "primary" }: { slug: string; qty?: number; variant?: keyof typeof STYLE }) {
   const cart = useCart();
   return (
-    <button type="button" data-testid="add-to-cart" onClick={() => cart.add(slug, qty)} className={STYLE[variant]}>
+    <button type="button" data-testid="add-to-cart" disabled={!cart.ready} onClick={() => cart.add(slug, qty)} className={`${STYLE[variant]} disabled:opacity-60`}>
       담기
     </button>
   );

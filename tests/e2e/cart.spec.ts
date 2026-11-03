@@ -46,6 +46,31 @@ test("로그인 상태에서 담은 직후 새로고침해 저장 요청이 끊�
   await expect(page.getByTestId("cart-line-ember-sofa")).toBeVisible();
 });
 
+test("로그인 확인 중에 누른 담기가 두 번 들어가지 않는다", async ({ page }) => {
+  await loginAsDemo(page);
+  // 서버 액션은 서버까지 가되, 응답은 브라우저에 닿지 않게 한다 (응답 전에 새로고침한 것과 같다)
+  await page.route("**/*", async (route) => {
+    if (route.request().method() === "POST" && route.request().headers()["next-action"]) {
+      await route.fetch();
+      await route.abort();
+    } else await route.fallback();
+  });
+  // 세션 확인을 늦춰 '로그인 상태인데 아직 모르는' 순간을 길게 만든다 (나중에 등록한 route 가 먼저 받는다)
+  await page.route("**/api/auth/session", async (route) => {
+    await new Promise((r) => setTimeout(r, 1500));
+    await route.continue();
+  });
+  await page.goto("/products/ember-sofa");
+  await page.getByTestId("add-to-cart").click();
+  await page.waitForTimeout(3000); // 세션 확인 + (끊긴) 저장 요청이 지나가도록
+  await page.unrouteAll({ behavior: "ignoreErrors" });
+  await page.reload();
+  await cartSettled(page);
+  await page.goto("/cart");
+  await expect(page.getByTestId("cart-line-ember-sofa")).toBeVisible();
+  await expect(page.getByTestId("cart-count")).toHaveText("1");
+});
+
 test("쇼룸 둘러보기 이름표 옆 + 로 담는다", async ({ page }) => {
   await page.goto("/");
   await scrollShowroom(page, featured.length + 3);
@@ -60,14 +85,22 @@ for (const [w, h] of [[1024, 700], [1280, 720], [1440, 900]] as const) {
     await page.goto("/?renderer=webgl2&tier=1");
     await scrollShowroom(page, featured.length + 3);
     await expect(page.getByTestId("showroom-explore")).toBeVisible();
-    await page.waitForTimeout(3000); // 카메라가 둘러보기 자리로 옮겨 가는 시간
-    const boxes = await page.evaluate(() =>
-      [...document.querySelectorAll<HTMLElement>("[data-testid^=room-add-],[data-testid^=room-hotspot-]")].map((e) => {
-        const r = e.getBoundingClientRect();
-        return { id: e.dataset.testid!, l: r.left, t: r.top, r: r.right, b: r.bottom };
-      }),
-    );
-    expect(boxes.length).toBeGreaterThan(4);
+    const read = () =>
+      page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>("[data-testid^=room-add-],[data-testid^=room-hotspot-]")].map((e) => {
+          const r = e.getBoundingClientRect();
+          return { id: e.dataset.testid!, l: Math.round(r.left), t: Math.round(r.top), r: Math.round(r.right), b: Math.round(r.bottom) };
+        }),
+      );
+    // 가구마다 이름표 + 담기 버튼이 다 붙고, 카메라가 둘러보기 자리에 멈출 때까지 (고정 대기는 느린 실행에서 모자랐다)
+    let boxes = await read();
+    await expect
+      .poll(async () => {
+        const prev = JSON.stringify(boxes);
+        boxes = await read();
+        return boxes.length === featured.length * 2 && JSON.stringify(boxes) === prev;
+      }, { timeout: 20_000, intervals: [400] })
+      .toBe(true);
     const hits: string[] = [];
     for (const a of boxes)
       for (const b of boxes)
