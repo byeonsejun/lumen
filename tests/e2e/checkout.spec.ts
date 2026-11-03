@@ -68,3 +68,39 @@ test("주문서에는 3D 가 없다", async ({ page }) => {
   await expect(page.getByTestId("checkout-total")).toBeVisible();
   await expect(page.getByTestId("stage-canvas")).toHaveCount(0);
 });
+
+async function buyOne(page: Page) {
+  await loginAsDemo(page);
+  await add(page, "ember-sofa");
+  await add(page, "dusk-pendant");
+  await page.goto("/checkout");
+  await fillAndPay(page);
+  await expect(page).toHaveURL(/\/orders\/(LM[0-9A-Za-z]{20})\/complete$/, { timeout: 20_000 });
+  return page.url().match(/orders\/(LM[0-9A-Za-z]{20})/)![1];
+}
+
+test("완료 화면 — 주문 번호 · 합계 · 3D 방", async ({ page }) => {
+  const orderId = await buyOne(page);
+  await expect(page.getByText("주문이 완료됐어요")).toBeVisible();
+  await expect(page.getByText(orderId)).toBeVisible();
+  await expect(page.getByTestId("complete-total")).toHaveText("2,210,000원");
+  await expect(page.getByText("테스트 결제입니다. 실제 배송되지 않아요")).toBeVisible();
+  await expect(page.getByTestId("stage-canvas")).toBeVisible();
+  await expect(page.getByTestId("complete-room")).toHaveAttribute("data-lights", "sequence");
+});
+
+test("완료 화면을 새로고침해도 결제는 그대로 한 번", async ({ page }) => {
+  await buyOne(page);
+  const paidAt = await page.getByTestId("complete-room").getAttribute("data-paid-at");
+  expect(paidAt).toBeTruthy();
+  await page.reload();
+  await expect(page.getByTestId("complete-room")).toHaveAttribute("data-paid-at", paidAt!);
+});
+
+test("동작 줄이기면 처음부터 불이 다 켜져 있다", async ({ browser }) => {
+  const ctx = await browser.newContext({ reducedMotion: "reduce" });
+  const page = await ctx.newPage();
+  await buyOne(page);
+  await expect(page.getByTestId("complete-room")).toHaveAttribute("data-lights", "on");
+  await ctx.close();
+});
