@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CATEGORY_LABEL, formatPrice, getProduct, getProducts } from "@/catalog/query";
+import { ProductPurchase } from "@/product/ProductPurchase";
 import { ProductViewer } from "@/product/ProductViewer";
 
 type Params = Promise<{ slug: string }>;
@@ -38,13 +39,7 @@ export default async function ProductPage({ params }: { params: Params }) {
             <span className="text-muted"> (가로 × 높이 × 깊이)</span>
           </dd>
         </dl>
-        <button
-          type="button"
-          disabled
-          className="mt-8 w-full rounded-full border border-fg/20 py-3 text-sm text-muted disabled:cursor-not-allowed"
-        >
-          장바구니 담기 (준비 중)
-        </button>
+        <ProductPurchase slug={product.slug} />
         <p className="mt-8 text-xs text-muted">
           3D model:{" "}
           <a

@@ -4,24 +4,61 @@ import { Html, OrbitControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRouter } from "next/navigation";
 import { useRef, type RefObject } from "react";
-import { MathUtils, Vector3, type Group, type PointLight, type SpotLight } from "three";
+import {
+  MathUtils,
+  Vector3,
+  type Group,
+  type PointLight,
+  type SpotLight,
+} from "three";
 import type { Product } from "@/catalog/types";
 import { PostFX } from "@/three/PostFX";
 import { ProductModel } from "@/three/ProductModel";
 import { QUALITY_PRESETS } from "@/three/quality/presets";
 import { useQuality } from "@/three/quality/store";
 import { ROOM_CAMERA, ROOM_LAYOUT } from "./layout";
-import { INTRO, REVEAL, showroomSegments, type ShowroomState } from "./timeline";
+import {
+  INTRO,
+  REVEAL,
+  showroomSegments,
+  type ShowroomState,
+} from "./timeline";
 
 const SPACING = 4.2;
-const STAGE_CAMERA = { position: new Vector3(0, 1.15, 4.4), target: new Vector3(0, 0.6, 0) };
-const ROOM_CAM = { position: new Vector3(...ROOM_CAMERA.position), target: new Vector3(...ROOM_CAMERA.target) };
+const STAGE_CAMERA = {
+  position: new Vector3(0, 1.15, 4.4),
+  target: new Vector3(0, 0.6, 0),
+};
+const ROOM_CAM = {
+  position: new Vector3(...ROOM_CAMERA.position),
+  target: new Vector3(...ROOM_CAMERA.target),
+};
 /** 방 조명이 켜지는 순서 (reveal 진행도 기준) */
 const ROOM_LIGHTS = [
-  { position: [0, 1.6, 0.25] as const, color: "#ffcf8f", at: 0.15, intensity: 1.6 }, // 펜던트 안
-  { position: [-1.6, 1.9, -0.9] as const, color: "#ffb870", at: 0.35, intensity: 6 }, // 소파·화분 쪽
-  { position: [2.2, 2.0, 0.8] as const, color: "#ffc58a", at: 0.55, intensity: 5 }, // 라운지 체어 쪽
-  { position: [0, 2.6, 2.4] as const, color: "#ffe2bd", at: 0.75, intensity: 3 }, // 앞쪽 채움광
+  {
+    position: [0, 1.6, 0.25] as const,
+    color: "#ffcf8f",
+    at: 0.15,
+    intensity: 1.6,
+  }, // 펜던트 안
+  {
+    position: [-1.6, 1.9, -0.9] as const,
+    color: "#ffb870",
+    at: 0.35,
+    intensity: 6,
+  }, // 소파·화분 쪽
+  {
+    position: [2.2, 2.0, 0.8] as const,
+    color: "#ffc58a",
+    at: 0.55,
+    intensity: 5,
+  }, // 라운지 체어 쪽
+  {
+    position: [0, 2.6, 2.4] as const,
+    color: "#ffe2bd",
+    at: 0.75,
+    intensity: 3,
+  }, // 앞쪽 채움광
 ];
 
 type Props = {
@@ -30,11 +67,19 @@ type Props = {
   phase: ShowroomState["phase"];
   reducedMotion: boolean;
   touch: boolean;
+  onAdd: (slug: string) => void;
 };
 
 const ease = (t: number) => t * t * (3 - 2 * t);
 
-export function ShowroomScene({ products, progress, phase, reducedMotion, touch }: Props) {
+export function ShowroomScene({
+  products,
+  progress,
+  phase,
+  reducedMotion,
+  touch,
+  onAdd,
+}: Props) {
   const router = useRouter();
   const preset = useQuality((s) => QUALITY_PRESETS[s.tier]);
   const spot = useRef<SpotLight>(null);
@@ -53,15 +98,26 @@ export function ShowroomScene({ products, progress, phase, reducedMotion, touch 
     const revealT = ease(MathUtils.clamp((x - INTRO - n) / REVEAL, 0, 1));
     // 목표에 거의 닿으면 붙여서 멈춘다 — 무한히 미세하게 움직이면 위에 얹힌 DOM 핫스팟이 흔들린다
     const k = (v: number, to: number, speed = 8) =>
-      reducedMotion || Math.abs(to - v) < 1e-3 ? to : MathUtils.damp(v, to, speed, delta);
+      reducedMotion || Math.abs(to - v) < 1e-3
+        ? to
+        : MathUtils.damp(v, to, speed, delta);
 
     if (spot.current) {
       const stage = 40 + 260 * MathUtils.smoothstep(introT, 0, 0.6);
-      spot.current.intensity = k(spot.current.intensity, MathUtils.lerp(stage, 60, revealT), 6);
+      spot.current.intensity = k(
+        spot.current.intensity,
+        MathUtils.lerp(stage, 60, revealT),
+        6,
+      );
     }
     ROOM_LIGHTS.forEach((l, i) => {
       const light = roomLights.current[i];
-      if (light) light.intensity = k(light.intensity, revealT > l.at ? l.intensity : 0, 5);
+      if (light)
+        light.intensity = k(
+          light.intensity,
+          revealT > l.at ? l.intensity : 0,
+          5,
+        );
     });
     if (walls.current) walls.current.visible = revealT > 0.01;
 
@@ -83,20 +139,44 @@ export function ShowroomScene({ products, progress, phase, reducedMotion, touch 
             r: MathUtils.lerp(stageRot, room.rotationY, revealT),
           }
         : { x: stageX, y: stageY, z: stageZ, r: stageRot };
-      g.position.set(k(g.position.x, to.x), k(g.position.y, to.y), k(g.position.z, to.z));
+      g.position.set(
+        k(g.position.x, to.x),
+        k(g.position.y, to.y),
+        k(g.position.z, to.z),
+      );
       g.rotation.y = to.r;
     });
 
     // 둘러보기에선 OrbitControls 가 카메라를 잡는다 (터치 기기는 천천히 자동으로 돈다)
     if (exploring && !touch) return;
-    const camTo = new Vector3().lerpVectors(STAGE_CAMERA.position, ROOM_CAM.position, revealT);
+    const camTo = new Vector3().lerpVectors(
+      STAGE_CAMERA.position,
+      ROOM_CAM.position,
+      revealT,
+    );
     if (exploring && touch && !reducedMotion) {
       const a = Math.sin(state.clock.elapsedTime * 0.12) * 0.35;
-      camTo.set(Math.sin(a) * 5.9, ROOM_CAM.position.y, Math.cos(a) * 5.9 - 0.6);
+      camTo.set(
+        Math.sin(a) * 5.9,
+        ROOM_CAM.position.y,
+        Math.cos(a) * 5.9 - 0.6,
+      );
     }
-    const lookTo = new Vector3().lerpVectors(STAGE_CAMERA.target, ROOM_CAM.target, revealT);
-    camera.position.set(k(camera.position.x, camTo.x, 4), k(camera.position.y, camTo.y, 4), k(camera.position.z, camTo.z, 4));
-    look.current.set(k(look.current.x, lookTo.x, 4), k(look.current.y, lookTo.y, 4), k(look.current.z, lookTo.z, 4));
+    const lookTo = new Vector3().lerpVectors(
+      STAGE_CAMERA.target,
+      ROOM_CAM.target,
+      revealT,
+    );
+    camera.position.set(
+      k(camera.position.x, camTo.x, 4),
+      k(camera.position.y, camTo.y, 4),
+      k(camera.position.z, camTo.z, 4),
+    );
+    look.current.set(
+      k(look.current.x, lookTo.x, 4),
+      k(look.current.y, lookTo.y, 4),
+      k(look.current.z, lookTo.z, 4),
+    );
     camera.lookAt(look.current);
   });
 
@@ -107,7 +187,11 @@ export function ShowroomScene({ products, progress, phase, reducedMotion, touch 
       <ambientLight intensity={0.05} />
       <hemisphereLight args={["#4a3826", "#000000", 0.35]} />
       {/* 뒤에서 윤곽을 살리는 약한 역광 */}
-      <directionalLight position={[-2, 3, -4]} intensity={0.6} color="#c9a27a" />
+      <directionalLight
+        position={[-2, 3, -4]}
+        intensity={0.6}
+        color="#c9a27a"
+      />
       <spotLight
         ref={spot}
         position={[0, 5.2, 0.6]}
@@ -145,19 +229,45 @@ export function ShowroomScene({ products, progress, phase, reducedMotion, touch 
         </mesh>
       </group>
       {products.map((p, i) => (
-        <group key={p.slug} ref={(g) => void (items.current[i] = g)} position={[i * SPACING, 0, 0]}>
-          <ProductModel id={p.polyhavenId} onClick={exploring ? () => router.push(`/products/${p.slug}`) : undefined} />
+        <group
+          key={p.slug}
+          ref={(g) => void (items.current[i] = g)}
+          position={[i * SPACING, 0, 0]}
+        >
+          <ProductModel
+            id={p.polyhavenId}
+            onClick={
+              exploring ? () => router.push(`/products/${p.slug}`) : undefined
+            }
+          />
           {exploring && (
-            <Html position={[0, p.dimensionsMm[1] / 1000 + 0.18, 0]} center zIndexRange={[10, 0]}>
-              <button
-                type="button"
-                data-testid={`room-hotspot-${p.slug}`}
-                onClick={() => router.push(`/products/${p.slug}`)}
-                className="group flex items-center gap-2 whitespace-nowrap"
-              >
-                <span className="block size-3 rounded-full bg-fg shadow-[0_0_0_6px_rgba(239,233,223,.25)]" />
-                <span className="rounded-full bg-bg/80 px-2 py-0.5 text-xs text-fg opacity-80 group-hover:opacity-100">{p.name}</span>
-              </button>
+            <Html
+              position={[0, p.dimensionsMm[1] / 1000 + 0.18, 0]}
+              center
+              zIndexRange={[10, 0]}
+            >
+              <div className="relative">
+                <button
+                  type="button"
+                  data-testid={`room-hotspot-${p.slug}`}
+                  onClick={() => router.push(`/products/${p.slug}`)}
+                  className="group flex items-center gap-2 whitespace-nowrap"
+                >
+                  <span className="block size-3 rounded-full bg-fg shadow-[0_0_0_6px_rgba(239,233,223,.25)]" />
+                  <span className="rounded-full bg-bg/80 px-2 py-0.5 text-xs text-fg opacity-80 group-hover:opacity-100">
+                    {p.name}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  data-testid={`room-add-${p.slug}`}
+                  aria-label={`${p.name} 담기`}
+                  onClick={() => onAdd(p.slug)}
+                  className="absolute -right-8 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded-full bg-accent text-sm font-semibold leading-none text-bg"
+                >
+                  +
+                </button>
+              </div>
             </Html>
           )}
         </group>

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Noto_Sans_KR } from "next/font/google";
 import { AccountMenu } from "@/auth-ui/AccountMenu";
 import { Providers } from "@/auth-ui/Providers";
+import { CartBadge } from "@/cart/ui/CartBadge";
+import { CartToast } from "@/cart/ui/CartToast";
 import "./globals.css";
 
 const sans = Noto_Sans_KR({ variable: "--font-sans-kr", subsets: ["latin"], weight: ["300", "400", "600"] });
@@ -25,6 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Link href="/products" className="hover:text-fg">
               Shop
             </Link>
+            <CartBadge />
             <AccountMenu />
           </nav>
         </header>
@@ -36,6 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </a>
           {" · "}CC0
         </footer>
+        <CartToast />
         </Providers>
       </body>
     </html>

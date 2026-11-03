@@ -4,6 +4,8 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { formatPrice } from "@/catalog/query";
+import { AddToCartButton } from "@/cart/ui/AddToCartButton";
+import { useCart } from "@/cart/useCart";
 import type { Product } from "@/catalog/types";
 import { posterUrl } from "@/three/models";
 import { showroomSegments, showroomTimeline, type ShowroomState } from "./timeline";
@@ -22,6 +24,8 @@ export function Showroom({ products }: { products: Product[] }) {
   // Showroom 은 클라이언트에서만 의미가 있다 — 서버에선 false
   const [touch] = useState(() => typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches);
   const segments = showroomSegments(products.length);
+  // 3D 장면(별도 React 루트)의 이름표 + 버튼은 세션 컨텍스트를 못 읽는다 — 담기 함수를 넘겨준다
+  const cart = useCart();
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -58,7 +62,7 @@ export function Showroom({ products }: { products: Product[] }) {
     <section ref={section} data-testid="showroom" className="relative" style={{ height: `${segments * 100}svh` }}>
       <div className="sticky top-0 h-svh overflow-hidden">
         <Stage3D poster={posterUrl(products[0].polyhavenId, 1024)} posterAlt={products[0].name} className="h-full w-full">
-          <ShowroomScene products={products} progress={progress} phase={state.phase} reducedMotion={reducedMotion} touch={touch} />
+          <ShowroomScene products={products} progress={progress} phase={state.phase} reducedMotion={reducedMotion} touch={touch} onAdd={(slug) => cart.add(slug)} />
         </Stage3D>
         <Overlay state={state} product={current} />
       </div>
@@ -87,12 +91,15 @@ function Overlay({ state, product }: { state: ShowroomState; product?: Product }
             <h2 className="mt-2 text-2xl font-light sm:text-4xl">{product.name}</h2>
             <p className="mt-2 text-lg text-accent">{formatPrice(product.priceKRW)}</p>
           </div>
-          <Link
-            href={`/products/${product.slug}`}
-            className="pointer-events-auto shrink-0 rounded-full border border-fg/30 px-4 py-2 text-sm hover:border-accent hover:text-accent"
-          >
-            자세히 →
-          </Link>
+          <div className="flex shrink-0 gap-2">
+            <AddToCartButton slug={product.slug} variant="overlay" />
+            <Link
+              href={`/products/${product.slug}`}
+              className="pointer-events-auto shrink-0 rounded-full border border-fg/30 px-4 py-2 text-sm hover:border-accent hover:text-accent"
+            >
+              자세히 →
+            </Link>
+          </div>
         </>
       )}
       {state.phase === "reveal" && <h2 className="text-2xl font-light sm:text-4xl">한 방에 모아 보면</h2>}
