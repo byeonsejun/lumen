@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { loadStage3D } from "@/three/idle";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -13,7 +14,7 @@ import { posterUrl } from "@/three/models";
 import { useQuality } from "@/three/quality/store";
 import { CartList } from "./CartList";
 
-const Stage3D = dynamic(() => import("@/three/Stage3D").then((m) => m.Stage3D), { ssr: false });
+const Stage3D = dynamic(loadStage3D, { ssr: false });
 const RoomScene = dynamic(() => import("@/room/RoomScene").then((m) => m.RoomScene), { ssr: false });
 
 export function CartView() {

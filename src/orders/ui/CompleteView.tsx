@@ -1,13 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { loadStage3D } from "@/three/idle";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { formatPrice, getProduct } from "@/catalog/query";
 import { arrangeRoom } from "@/room/arrange";
 import { posterUrl } from "@/three/models";
 
-const Stage3D = dynamic(() => import("@/three/Stage3D").then((m) => m.Stage3D), { ssr: false });
+const Stage3D = dynamic(loadStage3D, { ssr: false });
 const RoomScene = dynamic(() => import("@/room/RoomScene").then((m) => m.RoomScene), { ssr: false });
 
 type Props = { orderId: string; totalKRW: number; paidAt: string; items: { slug: string; quantity: number }[] };

@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { loadStage3D } from "@/three/idle";
 import { useState } from "react";
 import type { Product } from "@/catalog/types";
 import { posterUrl } from "@/three/models";
@@ -9,7 +10,7 @@ const STAGE_CLASS =
   "aspect-square w-full overflow-hidden rounded-sm bg-[radial-gradient(ellipse_at_50%_40%,#231e19,#0b0a09_70%)] sm:aspect-[4/3]";
 
 // 로딩 중에도 같은 크기를 잡아 레이아웃이 밀리지 않게 한다 (CLS)
-const Stage3D = dynamic(() => import("@/three/Stage3D").then((m) => m.Stage3D), {
+const Stage3D = dynamic(loadStage3D, {
   ssr: false,
   loading: () => <div className={STAGE_CLASS} />,
 });

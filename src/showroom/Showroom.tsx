@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { loadStage3D } from "@/three/idle";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { formatPrice } from "@/catalog/query";
@@ -10,7 +11,7 @@ import type { Product } from "@/catalog/types";
 import { posterUrl } from "@/three/models";
 import { showroomSegments, showroomTimeline, type ShowroomState } from "./timeline";
 
-const Stage3D = dynamic(() => import("@/three/Stage3D").then((m) => m.Stage3D), { ssr: false });
+const Stage3D = dynamic(loadStage3D, { ssr: false });
 const ShowroomScene = dynamic(() => import("./ShowroomScene").then((m) => m.ShowroomScene), { ssr: false });
 
 const sameState = (a: ShowroomState, b: ShowroomState) =>

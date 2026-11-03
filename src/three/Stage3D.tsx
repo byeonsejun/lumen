@@ -5,6 +5,7 @@ import { getGPUTier } from "detect-gpu";
 import { useEffect, useState, type ReactNode } from "react";
 import { browserEnv, detectRenderCapability, forcedCapability, type RenderCapability } from "./capability";
 import { createRenderer, rendererBackend } from "./createRenderer";
+import { afterFirstPaint } from "./idle";
 import { AdaptiveQuality } from "./quality/AdaptiveQuality";
 import { initialTier } from "./quality/policy";
 import { QUALITY_PRESETS, type QualityTier } from "./quality/presets";
@@ -44,16 +45,6 @@ async function initTier(search: URLSearchParams) {
   } catch {
     s.setTier(1);
   }
-}
-
-function afterFirstPaint(): Promise<void> {
-  const loaded = document.readyState === "complete" ? Promise.resolve() : new Promise<void>((r) => window.addEventListener("load", () => r(), { once: true }));
-  return loaded.then(
-    () =>
-      new Promise<void>((r) =>
-        "requestIdleCallback" in window ? requestIdleCallback(() => r(), { timeout: 1500 }) : setTimeout(r, 200),
-      ),
-  );
 }
 
 export function Stage3D({ poster, posterAlt, className, children, fallback }: Props) {
