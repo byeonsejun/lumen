@@ -17,6 +17,19 @@ import { addLine, cartCount, removeLine, setLine, type CartLine } from "./lines"
 type ServerCart = { lines: CartLine[]; status: "idle" | "syncing" | "synced"; focused: string | null; lastAdded: number };
 const useServerCart = create<ServerCart>(() => ({ lines: [], status: "idle", focused: null, lastAdded: 0 }));
 
+/**
+ * 서버 요청은 나간 순서와 다르게 돌아올 수 있다. 예: 로그인 직후 불러오기(빈 장바구니)가 담기보다 늦게 도착하면
+ * 방금 담은 가구를 지워 버린다. 가장 최근에 보낸 요청의 결과만 반영한다
+ */
+let latest = 0;
+function send(call: () => Promise<CartResult>) {
+  const mine = ++latest;
+  useServerCart.setState({ status: "syncing" });
+  void call().then((r) => {
+    if (mine === latest) apply(r);
+  });
+}
+
 function apply(result: CartResult) {
   if (result.ok) {
     useServerCart.setState({ lines: result.lines, status: "synced" });
@@ -37,9 +50,10 @@ export function CartSync() {
     }
     useServerCart.setState({ status: "syncing" });
     const guest = useGuestCart.getState().lines;
-    (guest.length ? mergeGuestCartAction(guest) : getCartAction()).then((r) => {
+    send(async () => {
+      const r = await (guest.length ? mergeGuestCartAction(guest) : getCartAction());
       if (r.ok && guest.length) useGuestCart.getState().clear();
-      apply(r);
+      return r;
     });
   }, [status]);
   return null;
@@ -54,7 +68,7 @@ export function useCart() {
 
   const optimistic = (next: CartLine[], call: () => Promise<CartResult>) => {
     useServerCart.setState({ lines: next });
-    void call().then(apply);
+    send(call);
   };
 
   return {
