@@ -39,6 +39,8 @@ model CartItem {
   userId      String   @db.Uuid
   productSlug String
   quantity    Int
+  /// 담은 순서 — 목록은 이 순서로 보여 준다(수량을 바꿔도 줄이 움직이지 않게)
+  createdAt   DateTime @default(now()) @db.Timestamptz
   updatedAt   DateTime @updatedAt @db.Timestamptz
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
