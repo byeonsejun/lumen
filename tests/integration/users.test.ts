@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { db } from "@/server/db";
-import { createDemoUser, findUser, purgeExpiredDemoUsers, upsertOAuthUser } from "@/server/users";
+import { DEMO_PER_IP_PER_HOUR, createDemoUser, demoAllowed, demoBucket, findUser, purgeExpiredDemoUsers, upsertOAuthUser } from "@/server/users";
 import { track } from "./helpers";
 
 describe("users", () => {
@@ -33,6 +33,31 @@ describe("users", () => {
     await db().user.update({ where: { id: u.id }, data: { createdAt: new Date(0) } });
     await purgeExpiredDemoUsers();
     expect(await findUser(u.id)).not.toBeNull();
+  });
+
+  it("같은 IP 는 1시간에 정해진 수까지만 데모 계정을 만든다", async () => {
+    const bucket = demoBucket(`10.0.${Date.now() % 250}.${Math.floor(Math.random() * 250)}`)!;
+    const other = demoBucket("10.255.255.1")!;
+    for (let i = 0; i < DEMO_PER_IP_PER_HOUR; i++) {
+      expect(await demoAllowed(bucket)).toBe(true);
+      track(await createDemoUser(new Date(), bucket));
+    }
+    expect(await demoAllowed(bucket)).toBe(false);
+    expect(await demoAllowed(other)).toBe(true);
+    // 1시간이 지나면 다시 열린다
+    expect(await demoAllowed(bucket, new Date(Date.now() + 3600e3 + 1000))).toBe(true);
+  });
+
+  it("IP 원문은 저장하지 않는다", async () => {
+    const ip = "203.0.113.7";
+    const bucket = demoBucket(ip)!;
+    expect(bucket).not.toContain(ip);
+    expect(bucket).toBe(demoBucket(ip));
+    expect(demoBucket(null)).toBeNull();
+    const u = track(await createDemoUser(new Date(), bucket));
+    const row = await db().user.findUnique({ where: { id: u.id }, select: { providerUserId: true } });
+    expect(row?.providerUserId.startsWith(`${bucket}.`)).toBe(true);
+    expect(row?.providerUserId).not.toContain(ip);
   });
 
   it("uuid 가 아닌 id 로 찾아도 null (오류 아님)", async () => expect(await findUser("not-a-uuid")).toBeNull());

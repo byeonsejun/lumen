@@ -4,7 +4,8 @@ import NextAuth, { type NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import Kakao from "next-auth/providers/kakao";
-import { createDemoUser, purgeExpiredDemoUsers, upsertOAuthUser } from "@/server/users";
+import { clientIp } from "@/server/client-ip";
+import { createDemoUser, demoAllowed, demoBucket, purgeExpiredDemoUsers, upsertOAuthUser } from "@/server/users";
 import type {} from "next-auth/jwt";
 
 declare module "next-auth" {
@@ -26,9 +27,12 @@ const providers: NextAuthConfig["providers"] = [
     id: "demo",
     name: "데모 계정",
     credentials: {},
-    async authorize() {
+    async authorize(_credentials, request) {
+      // 운영에서만 IP 별 한도를 건다. 로컬 · e2e 는 같은 주소로 수십 번 만든다
+      const bucket = process.env.VERCEL_ENV === "production" ? demoBucket(clientIp(request.headers)) : null;
+      if (bucket && !(await demoAllowed(bucket))) return null; // → /login?error=CredentialsSignin
       await purgeExpiredDemoUsers();
-      const u = await createDemoUser();
+      const u = await createDemoUser(new Date(), bucket);
       return { id: u.id, name: u.name };
     },
   }),
