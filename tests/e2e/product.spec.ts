@@ -8,7 +8,7 @@ test("상세에 이름·가격·출처가 있다", async ({ page }) => {
   await expect(page.getByRole("heading", { name: p.name })).toBeVisible();
   await expect(page.getByText(formatPrice(p.priceKRW))).toBeVisible();
   await expect(page.locator(`a[href="https://polyhaven.com/a/${p.polyhavenId}"]`)).toBeVisible();
-  await expect(page.getByRole("button", { name: /장바구니 담기/ })).toBeDisabled();
+  await expect(page.getByTestId("add-to-cart")).toBeEnabled(); // 2차: 비활성 버튼을 살렸다
 });
 
 test("3D 뷰어와 치수 토글", async ({ page }) => {
