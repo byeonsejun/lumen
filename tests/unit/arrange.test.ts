@@ -52,10 +52,12 @@ describe("arrangeRoom", () => {
 
   it("테이블은 가운데", () => expect(arrangeRoom([P("orbit-coffee-table")]).placements[0].position).toEqual([0, 0, 0]));
 
-  it("의자는 테이블 앞쪽에서 테이블을 바라본다", () => {
+  it("의자는 테이블 옆에서 테이블을 바라본다 — 정면 구도에서 테이블을 가리지 않게", () => {
     const r = arrangeRoom([P("orbit-coffee-table"), P("halo-lounge-chair")]);
     const c = r.placements.find((p) => p.slug === "halo-lounge-chair")!;
-    expect(c.position[2]).toBeGreaterThan(0.5);
+    const t = r.placements.find((p) => p.slug === "orbit-coffee-table")!;
+    // 의자 중심이 테이블 반지름(Orbit 지름 1.3m) 바깥 — 정면에서 보면 테이블 옆에 있다
+    expect(Math.abs(c.position[0] - t.position[0])).toBeGreaterThan(0.9);
     // 의자 앞(+z)을 회전시킨 방향이 테이블(원점)을 향한다
     const fx = Math.sin(c.rotationY), fz = Math.cos(c.rotationY);
     const tx = -c.position[0], tz = -c.position[2];
@@ -66,6 +68,12 @@ describe("arrangeRoom", () => {
     const r = arrangeRoom(getProducts().filter((p) => p.category !== "decor").map((p) => P(p.slug)));
     expect(floorOverlaps(r)).toEqual([]);
     expect(outside(r)).toEqual([]);
+  });
+
+  it("의자 둘은 테이블 양옆에 마주 놓인다", () => {
+    const r = arrangeRoom([P("orbit-coffee-table"), P("halo-lounge-chair", 2)]);
+    const [a, b] = r.placements.filter((p) => p.slug === "halo-lounge-chair");
+    expect(Math.sign(a.position[0])).toBe(-Math.sign(b.position[0]));
   });
 
   it("자리가 모자라면 방이 넓어진다", () => {

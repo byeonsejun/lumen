@@ -126,11 +126,14 @@ function tryArrange(list: Instance[], W: number, D: number): Placement[] | null 
     tx += it.w + 0.4;
   }
 
-  // 3. 둘레 — 첫 테이블(없으면 첫 벽 가구, 그것도 없으면 방 가운데) 앞쪽 반원 위, 그쪽을 바라보게
+  // 3. 둘레 — 첫 테이블(없으면 첫 벽 가구, 그것도 없으면 방 가운데) 앞쪽 반원 위, 그쪽을 바라보게.
+  //    양옆부터 채운다. 정면(카메라 쪽)부터 앉히면 결제 완료 장면에서 의자 등받이가 테이블을 가린다
   const around = by("around");
+  const SIDE_FIRST = [-0.42, 0.42, -0.2, 0.2].map((f) => f * Math.PI);
   const anchor = tableSpots[0] ?? (out[0] ? { x: out[0].position[0], z: out[0].position[2], d: 0.8, w: 1 } : { x: 0, z: -0.5, d: 0, w: 0 });
   around.forEach((it, i) => {
-    const theta = -Math.PI / 2 + (Math.PI * (i + 0.5)) / around.length; // 왼쪽 → 앞 → 오른쪽
+    // 넷까지는 왼쪽 옆 → 오른쪽 옆 → 왼쪽 앞 → 오른쪽 앞, 그보다 많으면 반원에 고르게
+    const theta = around.length <= SIDE_FIRST.length ? SIDE_FIRST[i] : -Math.PI / 2 + (Math.PI * (i + 0.5)) / around.length;
     let r = anchor.d / 2 + Math.max(it.w, it.d) / 2 + 0.4;
     for (let tries = 0; tries < 12; tries++, r += 0.2) {
       const x = anchor.x + Math.sin(theta) * r;
