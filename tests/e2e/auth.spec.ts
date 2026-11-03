@@ -15,7 +15,8 @@ test("로그인 뒤 callbackUrl 로 돌아온다 (같은 사이트 경로만)", 
 test("로그아웃하면 다시 로그인 링크", async ({ page }) => {
   await loginAsDemo(page);
   await page.getByRole("button", { name: "로그아웃" }).click();
-  await expect(page.getByRole("link", { name: "로그인" })).toBeVisible();
+  // 로그아웃 뒤 무거운 쇼룸(/)으로 이동한다 — 병렬 실행 중엔 5초를 넘길 때가 있다
+  await expect(page.getByRole("link", { name: "로그인", exact: true })).toBeVisible({ timeout: 15_000 });
 });
 
 test("쇼룸과 상품 상세는 여전히 정적으로 만들어진다", () => {
