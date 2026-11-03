@@ -88,6 +88,9 @@ export function ShowroomScene({
   const walls = useRef<Group>(null);
   const look = useRef(new Vector3().copy(STAGE_CAMERA.target));
   const camera = useThree((s) => s.camera);
+  // 방은 캔버스 크기에 맞춰 작아지는데 이름표는 px 고정이라, 좁은 화면에서 이웃 이름표와 겹쳤다.
+  // 1440px 을 기준으로 이름표도 같이 줄인다 (너무 작아 누르기 어렵지 않게 0.7 까지만)
+  const labelScale = useThree((s) => Math.min(1, Math.max(0.7, s.size.width / 1440)));
   const exploring = phase === "explore";
 
   useFrame((state, delta) => {
@@ -247,7 +250,7 @@ export function ShowroomScene({
               center
               zIndexRange={[10, 0]}
             >
-              <div className="relative">
+              <div className="relative" style={{ transform: `scale(${labelScale})` }}>
                 <button
                   type="button"
                   data-testid={`room-hotspot-${p.slug}`}

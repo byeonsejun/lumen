@@ -54,6 +54,28 @@ test("쇼룸 둘러보기 이름표 옆 + 로 담는다", async ({ page }) => {
   await expect(page.getByTestId("cart-count")).toHaveText("1");
 });
 
+for (const [w, h] of [[1024, 700], [1280, 720], [1440, 900]] as const) {
+  test(`둘러보기 이름표와 + 버튼이 서로 겹치지 않는다 (${w}×${h})`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: h });
+    await page.goto("/?renderer=webgl2&tier=1");
+    await scrollShowroom(page, featured.length + 3);
+    await expect(page.getByTestId("showroom-explore")).toBeVisible();
+    await page.waitForTimeout(3000); // 카메라가 둘러보기 자리로 옮겨 가는 시간
+    const boxes = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>("[data-testid^=room-add-],[data-testid^=room-hotspot-]")].map((e) => {
+        const r = e.getBoundingClientRect();
+        return { id: e.dataset.testid!, l: r.left, t: r.top, r: r.right, b: r.bottom };
+      }),
+    );
+    expect(boxes.length).toBeGreaterThan(4);
+    const hits: string[] = [];
+    for (const a of boxes)
+      for (const b of boxes)
+        if (a.id < b.id && a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b) hits.push(`${a.id} × ${b.id}`);
+    expect(hits).toEqual([]);
+  });
+}
+
 test("로그인 전에 담은 가구가 데모 로그인 뒤에도 남는다", async ({ page }) => {
   await page.goto("/products/ember-sofa");
   await page.getByLabel("수량").selectOption("2");
