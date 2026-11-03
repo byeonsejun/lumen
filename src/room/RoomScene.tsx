@@ -10,6 +10,7 @@ import { ProductModel } from "@/three/ProductModel";
 import { QUALITY_PRESETS } from "@/three/quality/presets";
 import { useQuality } from "@/three/quality/store";
 import type { RoomLayout } from "./arrange";
+import { focusBeam } from "./focus";
 
 export type RoomLights = "on" | "sequence" | "off";
 
@@ -41,6 +42,8 @@ export function RoomScene({ layout, focused = null, onPick, lights = "on", touch
 
   // 가구별 조명은 바닥 가구 중 앞에서부터 최대 6개
   const spotFor = useMemo(() => placements.filter((p) => p.level !== "surface").slice(0, MAX_SPOTS), [placements]);
+  // 같은 가구가 여러 개여도 전부 비추도록 (첫 번째 것만 비추던 문제)
+  const beam = useMemo(() => focusBeam(placements, focused), [placements, focused]);
 
   useEffect(() => {
     camera.position.set(0, size * 0.62 + 0.6, size * 0.95 + 1.2);
@@ -64,11 +67,11 @@ export function RoomScene({ layout, focused = null, onPick, lights = "on", touch
       s.intensity = k(s.intensity, (focused === p.slug ? 0 : 60) * on);
     });
     if (focusSpot.current) {
-      const p = placements.find((pl) => pl.slug === focused);
-      focusSpot.current.intensity = k(focusSpot.current.intensity, p ? 140 : 0);
-      if (p) {
-        focusSpot.current.position.set(p.position[0], 3.4, p.position[2] + 0.4);
-        focusSpot.current.target.position.set(p.position[0], 0, p.position[2]);
+      focusSpot.current.intensity = k(focusSpot.current.intensity, beam ? 140 : 0);
+      if (beam) {
+        focusSpot.current.position.set(...beam.position);
+        focusSpot.current.angle = beam.angle;
+        focusSpot.current.target.position.set(...beam.target);
         focusSpot.current.target.updateMatrixWorld();
       }
     }
