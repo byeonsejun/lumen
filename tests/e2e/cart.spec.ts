@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { getFeatured } from "../../src/catalog/query";
-import { loginAsDemo } from "./helpers";
+import { cartSettled, loginAsDemo } from "./helpers";
 
 const featured = getFeatured();
 
@@ -26,6 +26,24 @@ test("쇼룸 오버레이에서 담고 새로고침해도 남는다", async ({ p
   await expect(page.getByTestId("cart-count")).toHaveText("1");
   await page.reload();
   await expect(page.getByTestId("cart-count")).toHaveText("1");
+});
+
+test("로그인 상태에서 담은 직후 새로고침해 저장 요청이 끊겨도 담은 것이 남는다", async ({ page }) => {
+  await loginAsDemo(page);
+  await page.goto("/products/ember-sofa");
+  await cartSettled(page);
+  // 서버 액션 요청을 끊어 '담자마자 새로고침' 을 그대로 만든다
+  await page.route("**/*", (route) =>
+    route.request().method() === "POST" && route.request().headers()["next-action"] ? route.abort() : route.continue(),
+  );
+  await page.getByTestId("add-to-cart").click();
+  await expect(page.getByTestId("cart-count")).toHaveText("1");
+  await page.unroute("**/*");
+  await page.reload();
+  await expect(page.getByTestId("cart-count")).toHaveText("1", { timeout: 15_000 });
+  await cartSettled(page);
+  await page.goto("/cart");
+  await expect(page.getByTestId("cart-line-ember-sofa")).toBeVisible();
 });
 
 test("쇼룸 둘러보기 이름표 옆 + 로 담는다", async ({ page }) => {
