@@ -11,9 +11,9 @@ export type FocusBeam = { position: [number, number, number]; target: [number, n
  * 목록에서 고른 가구를 비출 조명 하나. 같은 가구가 여러 개면 전부의 가운데를 겨누고
  * 가장 먼 것까지 닿도록 원뿔을 넓힌다. 조명을 여러 개 두지 않는 건 조명 수가 곧 GPU 비용이라서다
  */
-export function focusBeam(placements: readonly Placement[], slug: string | null): FocusBeam | null {
-  if (!slug) return null;
-  const mine = placements.filter((p) => p.slug === slug);
+export function focusBeam(placements: readonly Placement[], key: string | null): FocusBeam | null {
+  if (!key) return null;
+  const mine = placements.filter((p) => `${p.slug}|${p.color ?? ""}` === key);
   if (!mine.length) return null;
   const cx = mine.reduce((s, p) => s + p.position[0], 0) / mine.length;
   const cz = mine.reduce((s, p) => s + p.position[2], 0) / mine.length;

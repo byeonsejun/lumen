@@ -152,7 +152,7 @@ test("목록 행을 누르면 방에서 그 가구가 강조된다", async ({ pa
   await page.goto("/cart");
   await page.getByTestId("cart-line-halo-lounge-chair").click();
   await expect(page.getByTestId("cart-line-halo-lounge-chair")).toHaveAttribute("data-focused", "true");
-  await expect(page.getByTestId("cart-room")).toHaveAttribute("data-focused", "halo-lounge-chair");
+  await expect(page.getByTestId("cart-room")).toHaveAttribute("data-focused", "halo-lounge-chair|");
 });
 
 test("빈 장바구니", async ({ page }) => {

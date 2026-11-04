@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { auth } from "@/auth";
 import { formatPrice } from "@/catalog/query";
 import { getMyOrder } from "@/orders/queries";
+import { ColorBadge } from "@/catalog/ColorBadge";
 
 export const metadata: Metadata = { title: "주문 상세 — LUMEN" };
 
@@ -37,7 +38,7 @@ async function Detail({ params }: { params: Params }) {
         {o.items.map((i) => (
           <li key={i.id} className="flex justify-between gap-4 py-3">
             <span>
-              {i.nameSnapshot} <span className="text-muted">× {i.quantity}</span>
+              {i.nameSnapshot} <span className="text-muted">× {i.quantity}</span> <ColorBadge slug={i.productSlug} color={i.color} label={i.colorLabelSnapshot} />
             </span>
             <span className="tabular-nums">{formatPrice(i.priceSnapshotKRW * i.quantity)}</span>
           </li>

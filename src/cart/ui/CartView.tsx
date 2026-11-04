@@ -27,7 +27,7 @@ export function CartView() {
       ? { touch: false, reduced: false }
       : { touch: window.matchMedia("(pointer: coarse)").matches, reduced: window.matchMedia("(prefers-reduced-motion: reduce)").matches },
   );
-  const items = useMemo(() => cart.lines.flatMap((l) => (getProduct(l.slug) ? [{ product: getProduct(l.slug)!, quantity: l.quantity }] : [])), [cart.lines]);
+  const items = useMemo(() => cart.lines.flatMap((l) => (getProduct(l.slug) ? [{ product: getProduct(l.slug)!, quantity: l.quantity, color: l.color }] : [])), [cart.lines]);
   const layout = useMemo(() => arrangeRoom(items), [items]);
   const { totalKRW } = priceLines(cart.lines);
   const empty = cart.lines.length === 0;
@@ -38,7 +38,7 @@ export function CartView() {
       {!noRender && (
         <div data-testid="cart-room" data-focused={cart.focused ?? ""} className="relative h-[45svh] lg:sticky lg:top-0 lg:h-svh">
           <Stage3D poster={posterUrl(items[0]?.product.polyhavenId ?? "sofa_02", 1024)} posterAlt="" className="h-full w-full" fallback={null}>
-            <RoomScene layout={layout} focused={cart.focused} onPick={(slug) => cart.focus(slug)} touch={env.touch} reducedMotion={env.reduced} />
+            <RoomScene layout={layout} focused={cart.focused} onPick={(key) => cart.focus(key)} touch={env.touch} reducedMotion={env.reduced} />
           </Stage3D>
           {empty && (
             <div className="pointer-events-none absolute inset-x-0 bottom-8 text-center text-sm text-muted">이 방은 아직 비어 있어요</div>

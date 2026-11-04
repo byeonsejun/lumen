@@ -6,6 +6,7 @@ import { formatPrice } from "@/catalog/query";
 import { priceLines } from "@/commerce/pricing";
 import { useCart } from "@/cart/useCart";
 import { PayButton } from "@/payments/PayButton";
+import { ColorBadge } from "@/catalog/ColorBadge";
 
 /** 주문서 — 3D 없음. 화면의 합계는 보여 주기용이고, 결제 금액은 서버가 다시 계산한다 */
 export function CheckoutView() {
@@ -53,7 +54,7 @@ export function CheckoutView() {
           {lines.map((l) => (
             <li key={l.slug} className="flex justify-between gap-3">
               <span className="truncate">
-                {l.name} <span className="text-muted">× {l.quantity}</span>
+                {l.name} <span className="text-muted">× {l.quantity}</span> <ColorBadge slug={l.slug} color={l.color} />
               </span>
               <span className="shrink-0 tabular-nums">{formatPrice(l.subtotalKRW)}</span>
             </li>

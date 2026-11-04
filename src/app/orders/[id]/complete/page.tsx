@@ -28,7 +28,7 @@ async function Complete({ params }: { params: Params }) {
       orderId={order.id}
       totalKRW={order.totalKRW}
       paidAt={order.paidAt.toISOString()}
-      items={order.items.map((i) => ({ slug: i.productSlug, quantity: i.quantity }))}
+      items={order.items.map((i) => ({ slug: i.productSlug, quantity: i.quantity, ...(i.color ? { color: i.color } : {}) }))}
     />
   );
 }

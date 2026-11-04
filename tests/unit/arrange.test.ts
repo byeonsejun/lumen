@@ -120,4 +120,11 @@ describe("arrangeRoom", () => {
     const r = arrangeRoom([P("moss-chair", 2)]);
     expect(r.placements.map((p) => p.instance)).toEqual([0, 1]);
   });
+  it("같은 상품 다른 색은 따로 놓이고 색을 기억한다", () => {
+    const sofa = getProduct("velvet-sofa")!;
+    const r = arrangeRoom([{ product: sofa, quantity: 1 }, { product: sofa, quantity: 1, color: "navy" }]);
+    const mine = r.placements.filter((p) => p.slug === "velvet-sofa");
+    expect(mine.map((p) => [p.color ?? "", p.instance])).toEqual([["", 0], ["navy", 0]]);
+    expect(mine[0].position).not.toEqual(mine[1].position);
+  });
 });

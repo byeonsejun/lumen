@@ -77,6 +77,27 @@ describe("confirmOrder", () => {
     expect(await readCart(u)).toEqual([{ slug: "halo-lounge-chair", quantity: 1 }]);
   });
 
+  it("주문 줄에 색과 색 이름이 남는다", async () => {
+    await writeLine(u, "velvet-sofa", 1, "navy");
+    await writeLine(u, "velvet-sofa", 1);
+    const r = await createOrder(u, ok);
+    if ("error" in r) throw new Error(r.error);
+    const items = await db().orderItem.findMany({ where: { orderId: r.orderId }, orderBy: { color: "asc" } });
+    expect(items.map((i) => [i.productSlug, i.color, i.colorLabelSnapshot])).toEqual([
+      ["velvet-sofa", "", null],
+      ["velvet-sofa", "navy", "네이비"],
+    ]);
+  });
+
+  it("subtractOrdered 는 색까지 맞춰 뺀다 — 결제 중 담은 같은 상품 다른 색은 남는다", async () => {
+    await writeLine(u, "velvet-sofa", 1, "navy");
+    const r = await createOrder(u, ok);
+    if ("error" in r) throw new Error(r.error);
+    await writeLine(u, "velvet-sofa", 1); // 결제창이 열린 동안 원래 색을 담았다
+    await confirmOrder(u, { paymentKey: "k", orderId: r.orderId, amount: String(r.amount) }, fakeToss());
+    expect(await readCart(u)).toEqual([{ slug: "velvet-sofa", quantity: 1 }]);
+  });
+
   it("토스 승인 실패면 pg-failed · FAILED · 장바구니 그대로", async () => {
     const { orderId, amount } = await setupOrder(u, [["ember-sofa", 1]]);
     const toss = vi.fn(async () => {

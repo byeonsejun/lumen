@@ -11,7 +11,7 @@ import { posterUrl } from "@/three/models";
 const Stage3D = dynamic(loadStage3D, { ssr: false });
 const RoomScene = dynamic(() => import("@/room/RoomScene").then((m) => m.RoomScene), { ssr: false });
 
-type Props = { orderId: string; totalKRW: number; paidAt: string; items: { slug: string; quantity: number }[] };
+type Props = { orderId: string; totalKRW: number; paidAt: string; items: { slug: string; quantity: number; color?: string }[] };
 
 /** 결제 완료 — 방금 산 가구 위로 불이 하나씩 켜진다. 쇼룸 첫 장면의 스포트라이트와 짝이다 */
 export function CompleteView({ orderId, totalKRW, paidAt, items }: Props) {
@@ -21,7 +21,7 @@ export function CompleteView({ orderId, totalKRW, paidAt, items }: Props) {
   }));
   // 카탈로그에서 사라진 상품은 장면에서 건너뛴다(주문 정보는 스냅샷으로 남아 있다)
   const layout = useMemo(
-    () => arrangeRoom(items.flatMap((i) => (getProduct(i.slug) ? [{ product: getProduct(i.slug)!, quantity: i.quantity }] : []))),
+    () => arrangeRoom(items.flatMap((i) => (getProduct(i.slug) ? [{ product: getProduct(i.slug)!, quantity: i.quantity, color: i.color }] : []))),
     [items],
   );
   const lights = env.reduced ? "on" : "sequence";

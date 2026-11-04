@@ -28,18 +28,18 @@ export function CartList({ lines, focused, onFocus, onSet, onRemove }: Props) {
       {lines.map((l) => {
         const p = getProduct(l.slug);
         if (!p) return null;
-        // 강조는 아직 상품 단위(같은 상품 다른 색은 함께) — 방 배치가 색을 알게 되면 줄 단위로
-        const active = focused === l.slug;
+        const key = lineKey(l);
+        const active = focused === key;
         const color = l.color ?? "";
         return (
           <li
-            key={lineKey(l)}
-            ref={(el) => void (el ? rows.current.set(l.slug, el) : rows.current.delete(l.slug))}
+            key={key}
+            ref={(el) => void (el ? rows.current.set(key, el) : rows.current.delete(key))}
             data-testid={color ? `cart-line-${l.slug}-${color}` : `cart-line-${l.slug}`}
             data-focused={active ? "true" : "false"}
-            onMouseEnter={() => onFocus(l.slug)}
-            onFocus={() => onFocus(l.slug)}
-            onClick={() => onFocus(l.slug)}
+            onMouseEnter={() => onFocus(key)}
+            onFocus={() => onFocus(key)}
+            onClick={() => onFocus(key)}
             className={`flex gap-4 py-4 transition-colors ${active ? "bg-bg-raised" : ""}`}
           >
             <div className="relative size-20 shrink-0 overflow-hidden rounded-sm bg-[radial-gradient(ellipse_at_50%_40%,#2a2420,#0f0d0b_70%)]">

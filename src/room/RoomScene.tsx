@@ -4,7 +4,7 @@ import { Html, OrbitControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import { MathUtils, Vector3, type PointLight, type SpotLight } from "three";
-import { getProduct } from "@/catalog/query";
+import { colorOption, getProduct } from "@/catalog/query";
 import { PostFX } from "@/three/PostFX";
 import { ProductModel } from "@/three/ProductModel";
 import { QUALITY_PRESETS } from "@/three/quality/presets";
@@ -64,7 +64,7 @@ export function RoomScene({ layout, focused = null, onPick, lights = "on", touch
       if (!s) return;
       const p = spotFor[i];
       const on = lights === "off" ? 0 : seq ? (t > (i + 1) * SEQ_STEP ? 1 : 0) : focused ? 0 : 0.6;
-      s.intensity = k(s.intensity, (focused === p.slug ? 0 : 60) * on);
+      s.intensity = k(s.intensity, (focused === `${p.slug}|${p.color ?? ""}` ? 0 : 60) * on);
     });
     if (focusSpot.current) {
       focusSpot.current.intensity = k(focusSpot.current.intensity, beam ? 140 : 0);
@@ -92,7 +92,7 @@ export function RoomScene({ layout, focused = null, onPick, lights = "on", touch
       ))}
       {spotFor.map((p, i) => (
         <spotLight
-          key={`${p.slug}#${p.instance}`}
+          key={`${p.slug}|${p.color ?? ""}#${p.instance}`}
           ref={(el) => {
             spots.current[i] = el;
             if (el) {
@@ -130,8 +130,13 @@ export function RoomScene({ layout, focused = null, onPick, lights = "on", touch
 
       {placements.map((p) =>
         getProduct(p.slug) ? (
-          <group key={`${p.slug}#${p.instance}`} position={p.position} rotation-y={p.rotationY}>
-            <ProductModel id={getProduct(p.slug)!.polyhavenId} dimensionsMm={getProduct(p.slug)!.dimensionsMm} onClick={onPick ? () => onPick(p.slug) : undefined} />
+          <group key={`${p.slug}|${p.color ?? ""}#${p.instance}`} position={p.position} rotation-y={p.rotationY}>
+            <ProductModel
+              id={getProduct(p.slug)!.polyhavenId}
+              dimensionsMm={getProduct(p.slug)!.dimensionsMm}
+              recolor={p.color ? colorOption(p.slug, p.color)?.recolor : undefined}
+              onClick={onPick ? () => onPick(`${p.slug}|${p.color ?? ""}`) : undefined}
+            />
             {p.label && (
               <Html position={[0, getProduct(p.slug)!.dimensionsMm[1] / 1000 + 0.15, 0]} center zIndexRange={[10, 0]}>
                 <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-bg">{p.label}</span>

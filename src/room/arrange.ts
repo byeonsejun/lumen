@@ -10,6 +10,8 @@ import type { Product } from "@/catalog/types";
 export type Placement = {
   slug: string;
   instance: number;
+  /** 고른 색 id. 원래 색이면 없다 */
+  color?: string;
   position: [x: number, y: number, z: number];
   rotationY: number;
   /** floor: 바닥 · ceiling: 천장에 매달림 · surface: 테이블 · 선반 위 */
@@ -18,7 +20,7 @@ export type Placement = {
   label?: string;
 };
 export type RoomLayout = { width: number; depth: number; placements: Placement[] };
-type Item = { product: Product; quantity: number };
+type Item = { product: Product; quantity: number; color?: string };
 
 const START = 4;
 const STEP = 0.5;
@@ -31,7 +33,7 @@ const CEILING = 2.6;
 const PENDANTS = new Set(["dusk-pendant", "crown-chandelier"]);
 
 type Role = "wall" | "center" | "around" | "ceiling" | "surface" | "corner";
-type Instance = { product: Product; instance: number; label?: string; w: number; h: number; d: number; role: Role };
+type Instance = { product: Product; color?: string; instance: number; label?: string; w: number; h: number; d: number; role: Role };
 type Rect = { x0: number; x1: number; z0: number; z1: number };
 
 function roleOf(p: Product, w: number): Role {
@@ -44,11 +46,12 @@ function roleOf(p: Product, w: number): Role {
 }
 
 function expand(items: Item[]): Instance[] {
-  return items.flatMap(({ product, quantity }) => {
+  return items.flatMap(({ product, quantity, color }) => {
     const [w, h, d] = product.dimensionsMm.map((v) => v / 1000);
     const n = Math.min(quantity, MAX_INSTANCES);
     return Array.from({ length: n }, (_, i) => ({
       product,
+      ...(color ? { color } : {}),
       instance: i,
       label: quantity > MAX_INSTANCES && i === n - 1 ? `×${quantity}` : undefined,
       w,
@@ -68,7 +71,7 @@ function tryArrange(list: Instance[], W: number, D: number): Placement[] | null 
   const surfaces: { x: number; z: number; y: number; w: number; used: number }[] = [];
   const free = (r: Rect) => r.x0 >= -W / 2 - 1e-9 && r.x1 <= W / 2 + 1e-9 && r.z0 >= -D / 2 - 1e-9 && r.z1 <= D / 2 + 1e-9 && floor.every((f) => !hits(r, f));
   const put = (it: Instance, x: number, y: number, z: number, rotationY: number, level: Placement["level"], rect?: Rect) => {
-    out.push({ slug: it.product.slug, instance: it.instance, position: [x, y, z], rotationY, level, ...(it.label ? { label: it.label } : {}) });
+    out.push({ slug: it.product.slug, ...(it.color ? { color: it.color } : {}), instance: it.instance, position: [x, y, z], rotationY, level, ...(it.label ? { label: it.label } : {}) });
     if (rect) floor.push(rect);
   };
   const by = (role: Role) => list.filter((i) => i.role === role);
@@ -207,6 +210,7 @@ export function arrangeRoom(items: Item[]): RoomLayout {
 
 /** 결과는 입력(장바구니) 순서대로 — 목록 ↔ 방 연결이 쉽게 */
 function sortLikeInput(placements: Placement[], list: Instance[]): Placement[] {
-  const order = new Map(list.map((it, i) => [`${it.product.slug}#${it.instance}`, i]));
-  return [...placements].sort((a, b) => order.get(`${a.slug}#${a.instance}`)! - order.get(`${b.slug}#${b.instance}`)!);
+  const key = (slug: string, color: string | undefined, instance: number) => `${slug}|${color ?? ""}#${instance}`;
+  const order = new Map(list.map((it, i) => [key(it.product.slug, it.color, it.instance), i]));
+  return [...placements].sort((a, b) => order.get(key(a.slug, a.color, a.instance))! - order.get(key(b.slug, b.color, b.instance))!);
 }

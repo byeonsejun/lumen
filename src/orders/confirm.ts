@@ -42,6 +42,6 @@ export async function confirmOrder(
   });
   // 동시에 두 번 들어와 다른 쪽이 먼저 PAID 로 바꿨다면 장바구니는 그쪽이 이미 뺐다
   if (count === 0) return { result: "already-paid", orderId };
-  await subtractOrdered(userId, order.items.map((i) => ({ slug: i.productSlug, quantity: i.quantity })));
+  await subtractOrdered(userId, order.items.map((i) => ({ slug: i.productSlug, quantity: i.quantity, ...(i.color ? { color: i.color } : {}) })));
   return { result: "paid", orderId };
 }

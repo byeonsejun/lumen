@@ -29,7 +29,9 @@ export async function createOrder(userId: string, recipient: Recipient): Promise
       recipientName: recipient.name.trim(),
       recipientPhone: recipient.phone.trim(),
       recipientAddress: recipient.address.trim(),
-      items: { create: lines.map((l) => ({ productSlug: l.slug, nameSnapshot: l.name, priceSnapshotKRW: l.unitPriceKRW, quantity: l.quantity })) },
+      items: {
+        create: lines.map((l) => ({ productSlug: l.slug, color: l.color, colorLabelSnapshot: l.colorLabel ?? null, nameSnapshot: l.name, priceSnapshotKRW: l.unitPriceKRW, quantity: l.quantity })),
+      },
     },
     select: { id: true },
   });
