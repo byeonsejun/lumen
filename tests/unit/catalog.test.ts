@@ -51,4 +51,8 @@ describe("catalog", () => {
     expect(colorOption("velvet-sofa", "")).toBeUndefined();
     expect(colorsOf("orbit-coffee-table")).toEqual([]);
   });
+  it("색을 고를 수 있는 가구의 소재 문구에는 색 이름이 없다 — 네이비를 골랐는데 '아이보리 패브릭' 이면 안 된다", () => {
+    for (const p of getProducts().filter((p) => p.colors))
+      for (const c of p.colors!) expect(p.material, `${p.slug}: ${c.label}`).not.toContain(c.label);
+  });
 });

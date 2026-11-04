@@ -2,14 +2,14 @@ import type { Product } from "./types";
 
 // 가격·설명·소재는 가짜 데이터. 모델과 치수는 Poly Haven (2026-11-02 api.polyhaven.com/info)
 export const PRODUCTS: Product[] = [
-  { slug: "ember-sofa", name: "Ember 3인 소파", category: "seating", priceKRW: 1890000, material: "블랙 가죽 · 체스터필드 단추 장식", description: "단추로 누빈 등받이와 말린 팔걸이의 체스터필드 3인 소파. 스포트라이트 아래에서 가죽의 결이 가장 잘 살아납니다.", polyhavenId: "sofa_02", dimensionsMm: [1807, 709, 818], featuredOrder: 1,
+  { slug: "ember-sofa", name: "Ember 3인 소파", category: "seating", priceKRW: 1890000, material: "가죽 · 체스터필드 단추 장식", description: "단추로 누빈 등받이와 말린 팔걸이의 체스터필드 3인 소파. 스포트라이트 아래에서 가죽의 결이 가장 잘 살아납니다.", polyhavenId: "sofa_02", dimensionsMm: [1807, 709, 818], featuredOrder: 1,
     colors: [
       { id: "black", label: "블랙", swatch: "#151210" },
       { id: "dark-brown", label: "다크 브라운", swatch: "#3b2618", recolor: { target: "#3b2618", key: "#110e08", tolerance: 0.05 } },
       { id: "oxblood", label: "옥스블러드", swatch: "#4a1c1c", recolor: { target: "#3a1212", key: "#110e08", tolerance: 0.05 } },
     ],
   },
-  { slug: "halo-lounge-chair", name: "Halo 라운지 체어", category: "seating", priceKRW: 890000, material: "블랙 가죽 · 원목 프레임", description: "곧은 원목 프레임에 가죽 쿠션을 올린 1인 라운지 체어. 책 한 권 분량의 시간을 위해 만들었습니다.", polyhavenId: "modern_arm_chair_01", dimensionsMm: [820, 1023, 987], featuredOrder: 2,
+  { slug: "halo-lounge-chair", name: "Halo 라운지 체어", category: "seating", priceKRW: 890000, material: "가죽 쿠션 · 원목 프레임", description: "곧은 원목 프레임에 가죽 쿠션을 올린 1인 라운지 체어. 책 한 권 분량의 시간을 위해 만들었습니다.", polyhavenId: "modern_arm_chair_01", dimensionsMm: [820, 1023, 987], featuredOrder: 2,
     colors: [
       { id: "black", label: "블랙", swatch: "#1a1a1a" },
       { id: "cognac", label: "코냑", swatch: "#8a5a3c", recolor: { target: "#4a2a18", key: "#101010", tolerance: 0.5, material: "pillow" } },
@@ -19,7 +19,7 @@ export const PRODUCTS: Product[] = [
   { slug: "orbit-coffee-table", name: "Orbit 원형 커피 테이블", category: "table", priceKRW: 540000, material: "화이트 상판 · 크롬 곡선 다리", description: "모서리 없는 원형 상판과 휘어진 크롬 다리. 소파 앞 동선을 부드럽게 만듭니다.", polyhavenId: "coffee_table_round_01", dimensionsMm: [1301, 491, 1301], featuredOrder: 3 },
   { slug: "dusk-pendant", name: "Dusk 펜던트 조명", category: "lighting", priceKRW: 320000, material: "화이트 유리 구형 셰이드 · 니켈", description: "아래로만 빛을 떨어뜨려 테이블 위에 작은 무대를 만드는 펜던트 조명.", polyhavenId: "modern_ceiling_lamp_01", dimensionsMm: [432, 952, 432], featuredOrder: 4 },
   { slug: "fern-planter", name: "Fern 대형 화분", category: "decor", priceKRW: 180000, material: "관엽식물 · 테라코타 화분", description: "어두운 방에 초록 하나. 넓게 퍼지는 잎이 조명 그림자를 벽에 그립니다.", polyhavenId: "potted_plant_02", dimensionsMm: [701, 841, 657], featuredOrder: 5 },
-  { slug: "velvet-sofa", name: "Velvet 2인 소파", category: "seating", priceKRW: 1390000, material: "아이보리 패브릭 · 조각 원목 프레임", description: "물결 모양으로 깎은 원목 프레임의 2인 소파. 작은 거실에 맞춘 크기입니다.", polyhavenId: "Sofa_01", dimensionsMm: [1571, 797, 658],
+  { slug: "velvet-sofa", name: "Velvet 2인 소파", category: "seating", priceKRW: 1390000, material: "패브릭 · 조각 원목 프레임", description: "물결 모양으로 깎은 원목 프레임의 2인 소파. 작은 거실에 맞춘 크기입니다.", polyhavenId: "Sofa_01", dimensionsMm: [1571, 797, 658],
     colors: [
       { id: "ivory", label: "아이보리", swatch: "#cfc6ba" },
       { id: "navy", label: "네이비", swatch: "#2f3f5f", recolor: { target: "#2f3f5f", key: "#968c82", tolerance: 0.12 } },
@@ -27,21 +27,21 @@ export const PRODUCTS: Product[] = [
       { id: "sage", label: "세이지", swatch: "#6f7d62", recolor: { target: "#6f7d62", key: "#968c82", tolerance: 0.12 } },
     ],
   },
-  { slug: "moss-chair", name: "Moss 체어", category: "seating", priceKRW: 420000, material: "그린 벨벳 · 조각 원목", description: "깊은 녹색 직물의 1인 의자. 공간에 색 하나를 더할 때.", polyhavenId: "GreenChair_01", dimensionsMm: [673, 1059, 664],
+  { slug: "moss-chair", name: "Moss 체어", category: "seating", priceKRW: 420000, material: "벨벳 · 조각 원목", description: "조각 원목에 벨벳을 씌운 1인 의자. 공간에 색 하나를 더할 때.", polyhavenId: "GreenChair_01", dimensionsMm: [673, 1059, 664],
     colors: [
       { id: "green", label: "그린", swatch: "#4b5a45" },
       { id: "burgundy", label: "버건디", swatch: "#6b2e3a", recolor: { target: "#6b2e3a", key: "#41463d", tolerance: 0.04 } },
       { id: "charcoal", label: "차콜", swatch: "#3a3a3c", recolor: { target: "#3a3a3c", key: "#41463d", tolerance: 0.04 } },
     ],
   },
-  { slug: "pebble-ottoman", name: "Pebble 오토만", category: "seating", priceKRW: 260000, material: "블랙 가죽", description: "발을 올리거나 보조 의자로 쓰는 낮은 오토만.", polyhavenId: "Ottoman_01", dimensionsMm: [885, 624, 621],
+  { slug: "pebble-ottoman", name: "Pebble 오토만", category: "seating", priceKRW: 260000, material: "가죽", description: "발을 올리거나 보조 의자로 쓰는 낮은 오토만.", polyhavenId: "Ottoman_01", dimensionsMm: [885, 624, 621],
     colors: [
       { id: "black", label: "블랙", swatch: "#2c2420" },
       { id: "cognac", label: "코냑", swatch: "#7a4a2c", recolor: { target: "#5a3420", key: "#2c2420", tolerance: 0.1 } },
       { id: "grey", label: "그레이", swatch: "#6e6a66", recolor: { target: "#5a5652", key: "#2c2420", tolerance: 0.1 } },
     ],
   },
-  { slug: "classic-armchair", name: "Classic 암체어", category: "seating", priceKRW: 760000, material: "그레이 패브릭 · 블랙 조각 원목", description: "넓은 팔걸이의 고전적인 암체어.", polyhavenId: "ArmChair_01", dimensionsMm: [848, 1065, 766],
+  { slug: "classic-armchair", name: "Classic 암체어", category: "seating", priceKRW: 760000, material: "패브릭 · 블랙 조각 원목", description: "넓은 팔걸이의 고전적인 암체어.", polyhavenId: "ArmChair_01", dimensionsMm: [848, 1065, 766],
     colors: [
       { id: "grey", label: "그레이", swatch: "#a5a29f" },
       { id: "forest", label: "포레스트", swatch: "#2f4a3a", recolor: { target: "#24392c", key: "#9e9b99", tolerance: 0.2 } },
