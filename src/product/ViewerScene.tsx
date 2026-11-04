@@ -5,13 +5,13 @@ import { useThree } from "@react-three/fiber";
 import { useEffect } from "react";
 import { EquirectangularReflectionMapping, PerspectiveCamera } from "three";
 import { HDRLoader } from "three/examples/jsm/loaders/HDRLoader.js";
-import type { Product } from "@/catalog/types";
+import type { Product, Recolor } from "@/catalog/types";
 import { PostFX } from "@/three/PostFX";
 import { ProductModel } from "@/three/ProductModel";
 import { QUALITY_PRESETS } from "@/three/quality/presets";
 import { useQuality } from "@/three/quality/store";
 
-export function ViewerScene({ product, showDims }: { product: Product; showDims: boolean }) {
+export function ViewerScene({ product, showDims, recolor }: { product: Product; showDims: boolean; recolor?: Recolor }) {
   const [w, h, d] = product.dimensionsMm.map((v) => v / 1000);
   const size = Math.max(w, h, d);
   const preset = useQuality((s) => QUALITY_PRESETS[s.tier]);
@@ -69,7 +69,7 @@ export function ViewerScene({ product, showDims }: { product: Product; showDims:
         <meshStandardMaterial color="#1c1814" roughness={0.85} />
       </mesh>
       <group position-y={product.category === "lighting" ? 0 : 0}>
-        <ProductModel id={product.polyhavenId} dimensionsMm={product.dimensionsMm} />
+        <ProductModel id={product.polyhavenId} dimensionsMm={product.dimensionsMm} recolor={recolor} />
       </group>
       {showDims && <Dimensions w={w} h={h} d={d} mm={product.dimensionsMm} />}
       <OrbitControls

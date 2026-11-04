@@ -3,7 +3,9 @@
 import { Html } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, useState } from "react";
-import { Box3, Mesh, SRGBColorSpace, TextureLoader, Vector3, type Group, type Object3D, type Texture } from "three";
+import { Box3, Mesh, SRGBColorSpace, TextureLoader, Vector3, type Group, type MeshStandardMaterial, type Object3D, type Texture } from "three";
+import type { Recolor } from "@/catalog/types";
+import { recolorMaterial } from "./recolor";
 import { fitTransform } from "./fit";
 import { loadModel } from "./loadModel";
 import { modelUrl, posterUrl } from "./models";
@@ -16,11 +18,13 @@ type Props = {
   castShadow?: boolean;
   /** 상품 치수(가로 · 높이 · 깊이 mm). 주면 모델 크기 · 방향을 여기에 맞춘다 (fitTransform) */
   dimensionsMm?: readonly [number, number, number];
+  /** 고른 색. 바뀌어도 모델은 다시 받지 않고 복제본의 재질만 바꾼다 */
+  recolor?: Recolor;
 };
 type Loaded = { res: "1k" | "2k"; scene: Group };
 
 /** 항상 1k 를 먼저 그리고, 품질 단계가 2k 면 2k 를 받아 교체한다. 로드 실패 시 같은 자리에 포스터 */
-export function ProductModel({ id, onClick, castShadow = true, dimensionsMm }: Props) {
+export function ProductModel({ id, onClick, castShadow = true, dimensionsMm, recolor }: Props) {
   const want = useQuality((s) => QUALITY_PRESETS[s.tier].assetRes);
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [failed, setFailed] = useState(false);
@@ -53,6 +57,8 @@ export function ProductModel({ id, onClick, castShadow = true, dimensionsMm }: P
       if (o instanceof Mesh) {
         o.castShadow = castShadow;
         o.receiveShadow = true;
+        const m = o.material as MeshStandardMaterial;
+        if (recolor && (!recolor.material || m.name.includes(recolor.material))) o.material = recolorMaterial(m, recolor);
       }
     });
     // 모델마다 단위 · 앞방향이 다르다 — 상품 치수에 맞춰 크기와 방향을 바로잡는다
@@ -68,7 +74,7 @@ export function ProductModel({ id, onClick, castShadow = true, dimensionsMm }: P
     const center = box.getCenter(new Vector3());
     clone.position.set(-center.x, -box.min.y, -center.z);
     return clone;
-  }, [loaded, castShadow, dimensionsMm]);
+  }, [loaded, castShadow, dimensionsMm, recolor]);
 
   const handleClick = onClick
     ? (e: ThreeEvent<MouseEvent>) => {

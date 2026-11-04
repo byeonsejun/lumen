@@ -4,7 +4,9 @@ import dynamic from "next/dynamic";
 import { loadStage3D } from "@/three/idle";
 import { useState } from "react";
 import type { Product } from "@/catalog/types";
+import { colorOption } from "@/catalog/query";
 import { posterUrl } from "@/three/models";
+import { useColorParam } from "./useColorParam";
 
 const STAGE_CLASS =
   "aspect-square w-full overflow-hidden rounded-sm bg-[radial-gradient(ellipse_at_50%_40%,#231e19,#0b0a09_70%)] sm:aspect-[4/3]";
@@ -18,6 +20,8 @@ const ViewerScene = dynamic(() => import("./ViewerScene").then((m) => m.ViewerSc
 
 export function ProductViewer({ product }: { product: Product }) {
   const [showDims, setShowDims] = useState(false);
+  const [color] = useColorParam(product.slug);
+  const recolor = colorOption(product.slug, color)?.recolor;
   return (
     <div className="relative">
       <Stage3D
@@ -25,7 +29,7 @@ export function ProductViewer({ product }: { product: Product }) {
         posterAlt={product.name}
         className={STAGE_CLASS}
       >
-        <ViewerScene product={product} showDims={showDims} />
+        <ViewerScene product={product} showDims={showDims} recolor={recolor} />
       </Stage3D>
       <div className="absolute left-3 top-3 flex gap-2">
         <button
