@@ -29,7 +29,7 @@ const MAX_INSTANCES = 4;
 const WALL_GAP = 0.05; // 등과 벽 사이
 const GAP = 0.1; // 바닥 가구 사이 여유
 const SIDE_GAP = 0.3; // 벽을 따라 나란히 놓을 때 간격
-const CEILING = 2.6;
+const CEILING = 2.6; // 기본 천장 높이 (내 방에서는 입력한 높이)
 const PENDANTS = new Set(["dusk-pendant", "crown-chandelier"]);
 
 type Role = "wall" | "center" | "around" | "ceiling" | "surface" | "corner";
@@ -65,7 +65,11 @@ function expand(items: Item[]): Instance[] {
 const rectAt = (x: number, z: number, fx: number, fz: number): Rect => ({ x0: x - fx / 2, x1: x + fx / 2, z0: z - fz / 2, z1: z + fz / 2 });
 const hits = (a: Rect, b: Rect, pad = GAP) => a.x0 < b.x1 + pad && b.x0 < a.x1 + pad && a.z0 < b.z1 + pad && b.z0 < a.z1 + pad;
 
-function tryArrange(list: Instance[], W: number, D: number): Placement[] | null {
+/**
+ * lenient: 크기를 늘리지 않는 모드(내 방). 자리가 없는 가구는 실패하는 대신 방 가운데에 둔다 — 겹침은 화면이 표시한다
+ */
+function tryArrange(list: Instance[], W: number, D: number, opts: { lenient?: boolean; ceiling?: number } = {}): Placement[] | null {
+  const { lenient = false, ceiling = CEILING } = opts;
   const out: Placement[] = [];
   const floor: Rect[] = [];
   const surfaces: { x: number; z: number; y: number; w: number; used: number }[] = [];
@@ -107,7 +111,8 @@ function tryArrange(list: Instance[], W: number, D: number): Placement[] | null 
       const z = rightZ + it.w / 2;
       put(it, x, 0, z, -Math.PI / 2, "floor", rectAt(x, z, it.d, it.w));
       rightZ += it.w + SIDE_GAP;
-    } else return null;
+    } else if (lenient) put(it, 0, 0, 0, 0, "floor");
+    else return null;
     if (it.product.category === "shelves") surfaces.push({ x: out.at(-1)!.position[0], z: out.at(-1)!.position[2], y: it.h, w: Math.min(it.w, 0.8), used: 0 });
   }
 
@@ -121,7 +126,11 @@ function tryArrange(list: Instance[], W: number, D: number): Placement[] | null 
     let z = 0;
     while (!free(rectAt(x, z, it.w, it.d))) {
       z += 0.1;
-      if (z + it.d / 2 > D / 2) return null;
+      if (z + it.d / 2 > D / 2) {
+        if (!lenient) return null;
+        z = 0;
+        break;
+      }
     }
     put(it, x, 0, z, 0, "floor", rectAt(x, z, it.w, it.d));
     tableSpots.push({ x, z, w: it.w, d: it.d, h: it.h });
@@ -149,6 +158,7 @@ function tryArrange(list: Instance[], W: number, D: number): Placement[] | null 
         return;
       }
     }
+    if (lenient) return void put(it, 0, 0, 0, 0, "floor");
     throw new Full();
   });
 
@@ -156,7 +166,7 @@ function tryArrange(list: Instance[], W: number, D: number): Placement[] | null 
   by("ceiling").forEach((it, i) => {
     const base = tableSpots[0] ?? { x: 0, z: 0 };
     const offset = i === 0 ? 0 : (i % 2 ? 1 : -1) * 0.6 * Math.ceil(i / 2);
-    put(it, base.x + offset, CEILING - it.h, base.z, 0, "ceiling");
+    put(it, base.x + offset, ceiling - it.h, base.z, 0, "ceiling");
   });
 
   // 5. 위에 놓기 — 테이블 · 선반 상판의 빈 자리, 없으면 구석 바닥
@@ -176,6 +186,7 @@ function tryArrange(list: Instance[], W: number, D: number): Placement[] | null 
         return;
       }
     }
+    if (lenient) return void put(it, 0, 0, 0, 0, "floor");
     throw new Full();
   };
   for (const it of by("surface")) {
@@ -194,8 +205,15 @@ function tryArrange(list: Instance[], W: number, D: number): Placement[] | null 
 
 class Full extends Error {}
 
-export function arrangeRoom(items: Item[]): RoomLayout {
+/**
+ * fixed 가 있으면 그 크기를 늘리지 않는다(내 방에 놓아 보기). 자리가 모자라면 남는 가구는 방 가운데
+ */
+export function arrangeRoom(items: Item[], fixed?: { width: number; depth: number; height?: number }): RoomLayout {
   const list = expand(items);
+  if (fixed) {
+    const placements = tryArrange(list, fixed.width, fixed.depth, { lenient: true, ceiling: fixed.height ?? CEILING })!;
+    return { width: fixed.width, depth: fixed.depth, placements: sortLikeInput(placements, list) };
+  }
   if (list.length === 0) return { width: START, depth: START, placements: [] };
   for (let size = START; size <= MAX; size += STEP) {
     try {
