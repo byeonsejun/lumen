@@ -74,6 +74,9 @@ export function CartView() {
             <button type="button" onClick={checkout} className="mt-6 w-full rounded-full bg-accent py-3 text-sm font-semibold text-bg hover:brightness-110">
               주문하기
             </button>
+            <Link href="/room" className="mt-3 flex min-h-11 items-center justify-center rounded-full border border-fg/25 text-sm hover:border-accent">
+              내 방 크기로 놓아 보기
+            </Link>
           </>
         )}
       </section>

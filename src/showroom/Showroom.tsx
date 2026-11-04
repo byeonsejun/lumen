@@ -110,13 +110,12 @@ function Overlay({ state, product }: { state: ShowroomState; product?: Product }
             <h2 className="text-2xl font-light sm:text-4xl">가구를 눌러 자세히 보세요</h2>
             <p className="mt-2 text-sm text-muted">드래그해서 방을 둘러볼 수 있어요</p>
           </div>
-          <button
-            type="button"
-            disabled
-            className="pointer-events-auto shrink-0 rounded-full border border-fg/20 px-4 py-2 text-sm text-muted disabled:cursor-not-allowed"
+          <Link
+            href="/room"
+            className="pointer-events-auto inline-flex min-h-11 shrink-0 items-center rounded-full border border-fg/30 px-4 text-sm hover:border-accent hover:text-accent"
           >
-            내 방에 놓아 보기 (준비 중)
-          </button>
+            내 방에 놓아 보기
+          </Link>
         </>
       )}
     </div>

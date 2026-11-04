@@ -115,3 +115,21 @@ test("3D 를 못 그리면 안내", async ({ page }) => {
   await expect(page.getByText("이 기기에서는 3D 를 그릴 수 없어요")).toBeVisible();
   await expect(page.getByRole("link", { name: "장바구니로" }).first()).toBeVisible();
 });
+
+test("장바구니에서 내 방으로", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.setItem("lumen-cart", JSON.stringify({ state: { lines: [{ slug: "ember-sofa", quantity: 1 }] }, version: 1 })));
+  await page.goto("/cart?renderer=none");
+  await page.getByRole("link", { name: "내 방 크기로 놓아 보기" }).click();
+  await expect(page).toHaveURL(/\/room$/);
+  await expect(page.getByTestId(SOFA)).toBeVisible();
+});
+
+test("상세에서 내 방에 놓아 보기를 누르면 고른 색으로 담기고 방에 있다", async ({ page }) => {
+  await page.goto("/products/velvet-sofa?color=navy");
+  await expect(page.getByTestId("color-navy")).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "내 방에 놓아 보기" }).click();
+  await expect(page).toHaveURL(/\/room$/);
+  await expect(page.getByTestId("room-item-velvet-sofa|navy#0")).toBeVisible();
+  await expect(page.getByTestId("cart-count")).toHaveText("1");
+});

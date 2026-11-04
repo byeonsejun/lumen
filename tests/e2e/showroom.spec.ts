@@ -42,8 +42,15 @@ test("끝까지 스크롤하면 방을 둘러보고, 가구를 누르면 상세�
   await page.goto("/");
   await scrollToSegment(page, segments);
   await expect(page.getByTestId("showroom-explore")).toBeVisible();
-  await expect(page.getByRole("button", { name: /내 방에 놓아 보기/ })).toBeDisabled();
   const target = featured[1];
   await page.getByTestId(`room-hotspot-${target.slug}`).click();
   await expect(page).toHaveURL(new RegExp(`/products/${target.slug}$`));
+});
+
+test("쇼룸 둘러보기에서 내 방으로", async ({ page }) => {
+  await page.goto("/");
+  await scrollToSegment(page, segments);
+  await expect(page.getByTestId("showroom-explore")).toBeVisible();
+  await page.getByRole("link", { name: "내 방에 놓아 보기" }).click();
+  await expect(page).toHaveURL(/\/room$/);
 });
