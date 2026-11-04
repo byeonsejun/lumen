@@ -14,6 +14,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "docs/**",
     "src/generated/**",
+    ".claude/**", // 로컬 전용 외부 스킬 (git 에 없음)
     ".superpowers/**",
   ]),
 ]);

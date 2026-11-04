@@ -52,10 +52,10 @@ export function CartView() {
           <div className="mt-10 text-center">
             <p>아직 담은 가구가 없어요</p>
             <p className="mt-6 flex justify-center gap-4 text-sm">
-              <Link href="/" className="text-accent underline-offset-4 hover:underline">
+              <Link href="/" className="inline-flex min-h-11 items-center px-2 text-accent underline-offset-4 hover:underline">
                 쇼룸
               </Link>
-              <Link href="/products" className="text-accent underline-offset-4 hover:underline">
+              <Link href="/products" className="inline-flex min-h-11 items-center px-2 text-accent underline-offset-4 hover:underline">
                 Shop
               </Link>
             </p>

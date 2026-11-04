@@ -24,7 +24,7 @@ export default async function ProductPage({ params }: { params: Params }) {
     <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-20 pt-20 sm:px-8 lg:grid-cols-[1.4fr_1fr] lg:pt-24">
       <ProductViewer product={product} />
       <div className="lg:pt-6">
-        <Link href={`/products?category=${product.category}`} className="text-xs text-muted hover:text-fg">
+        <Link href={`/products?category=${product.category}`} className="inline-flex min-h-6 items-center text-xs text-muted hover:text-fg">
           {CATEGORY_LABEL[product.category]}
         </Link>
         <h1 className="mt-2 text-3xl font-light">{product.name}</h1>

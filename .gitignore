@@ -50,3 +50,7 @@ playwright-report
 
 # Prisma 생성물
 /src/generated
+
+# 외부 디자인 스킬(로컬 전용) — 출처는 .claude/skills/SOURCES.md
+.claude/skills/
+.impeccable/config.local.json

@@ -26,6 +26,20 @@ html {
 body {
   background: var(--bg);
   color: var(--fg);
+  caret-color: var(--accent);
+  accent-color: var(--accent);
+  scrollbar-color: var(--line) var(--bg);
+}
+
+/* 브라우저 기본 하늘색 대신 조명 색으로 — 그리지 않은 부분도 디자인에 속한다 */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: rgb(232 182 121 / 0.35);
+  color: var(--fg);
 }
 
 @keyframes fadeUp {

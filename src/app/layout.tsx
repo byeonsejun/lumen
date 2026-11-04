@@ -6,6 +6,7 @@ import { Providers } from "@/auth-ui/Providers";
 import { CartBadge } from "@/cart/ui/CartBadge";
 import { CartToast } from "@/cart/ui/CartToast";
 import "./globals.css";
+import { NAV_ITEM } from "@/auth-ui/nav-item";
 
 const sans = Noto_Sans_KR({ variable: "--font-sans-kr", subsets: ["latin"], weight: ["300", "400", "600"] });
 
@@ -20,11 +21,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-svh flex-col font-sans">
         <Providers>
         <header className="fixed inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-4 text-sm sm:px-8">
-          <Link href="/" className="font-semibold tracking-[0.3em]">
+          <Link href="/" className={`${NAV_ITEM} -ml-1.5 font-semibold tracking-[0.3em] sm:ml-0`}>
             LUMEN
           </Link>
-          <nav className="flex items-center gap-6 text-muted">
-            <Link href="/products" className="hover:text-fg">
+          <nav className="flex items-center gap-1 text-muted sm:gap-6">
+            <Link href="/products" className={NAV_ITEM}>
               Shop
             </Link>
             <CartBadge />
