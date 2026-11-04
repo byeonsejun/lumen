@@ -41,15 +41,16 @@ export default async function ProductPage({ params }: { params: Params }) {
         </dl>
         <ProductPurchase slug={product.slug} />
         <p className="mt-8 text-xs text-muted">
-          3D model:{" "}
+          3D 모델은{" "}
           <a
             href={`https://polyhaven.com/a/${product.polyhavenId}`}
             target="_blank"
             rel="noreferrer"
-            className="underline hover:text-fg"
+            className="underline underline-offset-2 hover:text-fg"
           >
-            {product.polyhavenId} — Poly Haven
+            Poly Haven
           </a>
+          의 CC0 에셋을 다듬어 썼어요
         </p>
       </div>
     </div>

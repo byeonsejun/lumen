@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Noto_Sans_KR } from "next/font/google";
+import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
 import { AccountMenu } from "@/auth-ui/AccountMenu";
 import { Providers } from "@/auth-ui/Providers";
 import { CartBadge } from "@/cart/ui/CartBadge";
@@ -9,6 +9,8 @@ import "./globals.css";
 import { NAV_ITEM } from "@/auth-ui/nav-item";
 
 const sans = Noto_Sans_KR({ variable: "--font-sans-kr", subsets: ["latin"], weight: ["300", "400", "600"] });
+// 제목 글꼴 — 어두운 갤러리에 놓인 가구 이름표처럼. 본문 · 버튼 · 숫자는 산세리프 그대로
+const serif = Noto_Serif_KR({ variable: "--font-serif-kr", subsets: ["latin"], weight: ["300", "400"], display: "swap" });
 
 export const metadata: Metadata = {
   title: "LUMEN — 3D 가구 쇼룸",
@@ -17,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ko" className={`${sans.variable} antialiased`}>
+    <html lang="ko" className={`${sans.variable} ${serif.variable} antialiased`}>
       <body className="flex min-h-svh flex-col font-sans">
         <Providers>
         <header className="fixed inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-4 text-sm sm:px-8">

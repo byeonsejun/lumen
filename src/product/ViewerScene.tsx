@@ -51,7 +51,7 @@ export function ViewerScene({ product, showDims, recolor }: { product: Product; 
   return (
     <>
       <color attach="background" args={["#0f0d0b"]} />
-      <fog attach="fog" args={["#0f0d0b", size * 2.5 + 1, size * 5 + 3]} />
+      <fog attach="fog" args={["#0f0d0b", size * 1.6 + 0.6, size * 3.4 + 1.6]} />
       <ambientLight intensity={0.08} />
       <spotLight
         position={[size * 0.8, size * 2.5 + 1.5, size * 1.2 + 0.5]}

@@ -17,6 +17,7 @@
   --color-line: var(--line);
   --color-accent: var(--accent);
   --font-sans: var(--font-sans-kr), system-ui, sans-serif;
+  --font-serif: var(--font-serif-kr), ui-serif, serif;
 }
 
 html {
@@ -29,6 +30,13 @@ body {
   caret-color: var(--accent);
   accent-color: var(--accent);
   scrollbar-color: var(--line) var(--bg);
+}
+
+/* 페이지 제목 · 가구 이름은 세리프. 글자 사이를 살짝 좁혀 큰 크기에서 흩어지지 않게 */
+h1,
+h2 {
+  font-family: var(--font-serif);
+  letter-spacing: -0.01em;
 }
 
 /* 브라우저 기본 하늘색 대신 조명 색으로 — 그리지 않은 부분도 디자인에 속한다 */

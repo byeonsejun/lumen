@@ -87,6 +87,7 @@ export function ShowroomScene({
   const items = useRef<(Group | null)[]>([]);
   const walls = useRef<Group>(null);
   const look = useRef(new Vector3().copy(STAGE_CAMERA.target));
+  const bootAt = useRef<number | null>(null);
   const camera = useThree((s) => s.camera);
   // 방은 캔버스 크기에 맞춰 작아지는데 이름표는 px 고정이라, 좁은 화면에서 이웃 이름표와 겹쳤다.
   // 1440px 을 기준으로 이름표도 같이 줄인다 (너무 작아 누르기 어렵지 않게 0.7 까지만)
@@ -106,7 +107,10 @@ export function ShowroomScene({
         : MathUtils.damp(v, to, speed, delta);
 
     if (spot.current) {
-      const stage = 40 + 260 * MathUtils.smoothstep(introT, 0, 0.6);
+      // 열자마자 2초에 걸쳐 조명이 저절로 켜지고(스크롤 전에도 가구가 보이게), 스크롤하면 더 밝아진다
+      if (bootAt.current === null) bootAt.current = state.clock.elapsedTime;
+      const boot = reducedMotion ? 1 : MathUtils.smoothstep(state.clock.elapsedTime - bootAt.current, 0.3, 2.3);
+      const stage = 40 + 130 * boot + 130 * MathUtils.smoothstep(introT, 0, 0.6);
       spot.current.intensity = k(
         spot.current.intensity,
         MathUtils.lerp(stage, 60, revealT),
