@@ -24,14 +24,14 @@ async function withViewer(run: (userId: string) => Promise<unknown>): Promise<Ca
 export async function getCartAction(): Promise<CartResult> {
   return withViewer(async () => {});
 }
-export async function addToCartAction(slug: string, qty = 1): Promise<CartResult> {
-  return withViewer((id) => addToLine(id, slug, qty));
+export async function addToCartAction(slug: string, qty = 1, color = ""): Promise<CartResult> {
+  return withViewer((id) => addToLine(id, slug, qty, color));
 }
-export async function setCartLineAction(slug: string, qty: number): Promise<CartResult> {
-  return withViewer((id) => writeLine(id, slug, Math.max(qty, 1)));
+export async function setCartLineAction(slug: string, qty: number, color = ""): Promise<CartResult> {
+  return withViewer((id) => writeLine(id, slug, Math.max(qty, 1), color));
 }
-export async function removeCartLineAction(slug: string): Promise<CartResult> {
-  return withViewer((id) => writeLine(id, slug, 0));
+export async function removeCartLineAction(slug: string, color = ""): Promise<CartResult> {
+  return withViewer((id) => writeLine(id, slug, 0, color));
 }
 export async function mergeGuestCartAction(lines: CartLine[]): Promise<CartResult> {
   return withViewer((id) => mergeIntoCart(id, Array.isArray(lines) ? lines.slice(0, 50) : []));

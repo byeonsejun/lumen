@@ -1,6 +1,7 @@
-import { getProduct } from "@/catalog/query";
+import { colorOption, getProduct, normalizeColor } from "@/catalog/query";
 
-export type PricedLine = { slug: string; name: string; unitPriceKRW: number; quantity: number; subtotalKRW: number };
+/** color: 고른 색 id ("" = 원래 색). 가격은 색과 상관없다 */
+export type PricedLine = { slug: string; color: string; colorLabel?: string; name: string; unitPriceKRW: number; quantity: number; subtotalKRW: number };
 
 export const MAX_QUANTITY = 9;
 
@@ -11,16 +12,20 @@ export function clampQuantity(q: number): number {
 }
 
 /** 가격은 언제나 카탈로그로 다시 계산한다. 클라이언트가 보낸 가격은 받지 않는다 */
-export function priceLines(lines: { slug: string; quantity: number }[]): { lines: PricedLine[]; totalKRW: number } {
-  const merged = new Map<string, number>();
+export function priceLines(lines: { slug: string; quantity: number; color?: string }[]): { lines: PricedLine[]; totalKRW: number } {
+  const merged = new Map<string, { slug: string; color: string; q: number }>();
   for (const l of lines) {
     if (!getProduct(l.slug)) continue;
-    merged.set(l.slug, (merged.get(l.slug) ?? 0) + Math.max(Math.floor(Number.isFinite(l.quantity) ? l.quantity : 1), 1));
+    const color = normalizeColor(l.slug, l.color);
+    const key = `${l.slug}|${color}`;
+    const q = Math.max(Math.floor(Number.isFinite(l.quantity) ? l.quantity : 1), 1);
+    merged.set(key, { slug: l.slug, color, q: (merged.get(key)?.q ?? 0) + q });
   }
-  const priced = [...merged].map(([slug, q]) => {
+  const priced = [...merged.values()].map(({ slug, color, q }) => {
     const p = getProduct(slug)!;
     const quantity = clampQuantity(q);
-    return { slug, name: p.name, unitPriceKRW: p.priceKRW, quantity, subtotalKRW: p.priceKRW * quantity };
+    const colorLabel = colorOption(slug, color)?.label;
+    return { slug, color, ...(colorLabel ? { colorLabel } : {}), name: p.name, unitPriceKRW: p.priceKRW, quantity, subtotalKRW: p.priceKRW * quantity };
   });
   return { lines: priced, totalKRW: priced.reduce((s, l) => s + l.subtotalKRW, 0) };
 }

@@ -37,6 +37,26 @@ describe("cart repo", () => {
     expect(await mergeIntoCart(u, [{ slug: "ember-sofa", quantity: 5 }, { slug: "ghost", quantity: 1 }])).toEqual([{ slug: "ember-sofa", quantity: 9 }]);
   });
 
+  it("같은 상품 두 색은 두 줄 · 없는 색 id 는 원래 색", async () => {
+    await writeLine(u, "velvet-sofa", 1);
+    await writeLine(u, "velvet-sofa", 2, "navy");
+    await writeLine(u, "velvet-sofa", 1, "rainbow");
+    expect(await readCart(u)).toEqual([
+      { slug: "velvet-sofa", quantity: 1 },
+      { slug: "velvet-sofa", quantity: 2, color: "navy" },
+    ]);
+    await writeLine(u, "velvet-sofa", 0, "navy");
+    expect(await readCart(u)).toEqual([{ slug: "velvet-sofa", quantity: 1 }]);
+  });
+
+  it("mergeIntoCart 는 색별로 합친다", async () => {
+    await writeLine(u, "velvet-sofa", 1, "navy");
+    expect(await mergeIntoCart(u, [{ slug: "velvet-sofa", quantity: 1, color: "navy" }, { slug: "velvet-sofa", quantity: 1 }])).toEqual([
+      { slug: "velvet-sofa", quantity: 2, color: "navy" },
+      { slug: "velvet-sofa", quantity: 1 },
+    ]);
+  });
+
   it("주문한 수량만 뺀다", async () => {
     await writeLine(u, "ember-sofa", 3);
     await writeLine(u, "halo-lounge-chair", 1);

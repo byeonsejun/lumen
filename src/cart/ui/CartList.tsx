@@ -4,15 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { formatPrice, getProduct } from "@/catalog/query";
-import type { CartLine } from "@/cart/lines";
+import { ColorBadge } from "@/catalog/ColorBadge";
+import { lineKey, type CartLine } from "@/cart/lines";
 import { posterUrl } from "@/three/models";
 
 type Props = {
   lines: CartLine[];
   focused: string | null;
   onFocus: (slug: string | null) => void;
-  onSet: (slug: string, qty: number) => void;
-  onRemove: (slug: string) => void;
+  onSet: (slug: string, qty: number, color?: string) => void;
+  onRemove: (slug: string, color?: string) => void;
 };
 
 export function CartList({ lines, focused, onFocus, onSet, onRemove }: Props) {
@@ -27,12 +28,14 @@ export function CartList({ lines, focused, onFocus, onSet, onRemove }: Props) {
       {lines.map((l) => {
         const p = getProduct(l.slug);
         if (!p) return null;
+        // 강조는 아직 상품 단위(같은 상품 다른 색은 함께) — 방 배치가 색을 알게 되면 줄 단위로
         const active = focused === l.slug;
+        const color = l.color ?? "";
         return (
           <li
-            key={l.slug}
+            key={lineKey(l)}
             ref={(el) => void (el ? rows.current.set(l.slug, el) : rows.current.delete(l.slug))}
-            data-testid={`cart-line-${l.slug}`}
+            data-testid={color ? `cart-line-${l.slug}-${color}` : `cart-line-${l.slug}`}
             data-focused={active ? "true" : "false"}
             onMouseEnter={() => onFocus(l.slug)}
             onFocus={() => onFocus(l.slug)}
@@ -46,20 +49,21 @@ export function CartList({ lines, focused, onFocus, onSet, onRemove }: Props) {
               <Link href={`/products/${p.slug}`} className="truncate text-sm hover:text-accent">
                 {p.name}
               </Link>
+              <ColorBadge slug={l.slug} color={color} />
               <p className="mt-1 text-xs text-muted">{formatPrice(p.priceKRW)}</p>
               <div className="mt-auto flex items-center gap-3 pt-2">
                 <div className="flex items-center rounded-full border border-fg/20 text-sm">
-                  <button type="button" aria-label="수량 줄이기" disabled={l.quantity <= 1} onClick={(e) => (e.stopPropagation(), onSet(l.slug, l.quantity - 1))} className="px-3 py-1 disabled:opacity-30">
+                  <button type="button" aria-label="수량 줄이기" disabled={l.quantity <= 1} onClick={(e) => (e.stopPropagation(), onSet(l.slug, l.quantity - 1, color))} className="px-3 py-1 disabled:opacity-30">
                     −
                   </button>
                   <span aria-label="수량" className="w-6 text-center tabular-nums">
                     {l.quantity}
                   </span>
-                  <button type="button" aria-label="수량 늘리기" disabled={l.quantity >= 9} onClick={(e) => (e.stopPropagation(), onSet(l.slug, l.quantity + 1))} className="px-3 py-1 disabled:opacity-30">
+                  <button type="button" aria-label="수량 늘리기" disabled={l.quantity >= 9} onClick={(e) => (e.stopPropagation(), onSet(l.slug, l.quantity + 1, color))} className="px-3 py-1 disabled:opacity-30">
                     +
                   </button>
                 </div>
-                <button type="button" onClick={(e) => (e.stopPropagation(), onRemove(l.slug))} className="text-xs text-muted hover:text-fg">
+                <button type="button" onClick={(e) => (e.stopPropagation(), onRemove(l.slug, color))} className="text-xs text-muted hover:text-fg">
                   빼기
                 </button>
               </div>

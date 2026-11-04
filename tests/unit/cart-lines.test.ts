@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addLine, cartCount, mergeLines, removeLine, setLine } from "@/cart/lines";
+import { addLine, cartCount, lineKey, mergeLines, removeLine, setLine } from "@/cart/lines";
 
 describe("cart lines", () => {
   it("담으면 뒤에 붙고, 같은 상품은 더한다", () => {
@@ -23,4 +23,24 @@ describe("cart lines", () => {
     ]));
   it("모르는 slug 는 합칠 때 버린다", () => expect(mergeLines([], [{ slug: "ghost", quantity: 1 }])).toEqual([]));
   it("개수", () => expect(cartCount([{ slug: "a", quantity: 2 }, { slug: "b", quantity: 3 }])).toBe(5));
+  it("색이 다르면 새 줄 · 원래 색은 color 를 적지 않는다", () =>
+    expect(addLine(addLine([], "velvet-sofa"), "velvet-sofa", 1, "navy")).toEqual([
+      { slug: "velvet-sofa", quantity: 1 },
+      { slug: "velvet-sofa", quantity: 1, color: "navy" },
+    ]));
+  it("setLine/removeLine 은 같은 색 줄만", () => {
+    const l = [{ slug: "velvet-sofa", quantity: 1 }, { slug: "velvet-sofa", quantity: 1, color: "navy" }];
+    expect(removeLine(l, "velvet-sofa", "navy")).toEqual([{ slug: "velvet-sofa", quantity: 1 }]);
+    expect(setLine(l, "velvet-sofa", 3)).toEqual([{ slug: "velvet-sofa", quantity: 3 }, { slug: "velvet-sofa", quantity: 1, color: "navy" }]);
+  });
+  it("카탈로그에 없는 색은 원래 색으로 담는다", () => expect(addLine([], "velvet-sofa", 1, "rainbow")).toEqual([{ slug: "velvet-sofa", quantity: 1 }]));
+  it("mergeLines 는 lineKey 로 더하고 9 에서 자른다", () =>
+    expect(mergeLines([{ slug: "velvet-sofa", quantity: 6, color: "navy" }], [{ slug: "velvet-sofa", quantity: 5, color: "navy" }, { slug: "velvet-sofa", quantity: 1 }])).toEqual([
+      { slug: "velvet-sofa", quantity: 9, color: "navy" },
+      { slug: "velvet-sofa", quantity: 1 },
+    ]));
+  it("lineKey", () => {
+    expect(lineKey({ slug: "velvet-sofa" })).toBe("velvet-sofa|");
+    expect(lineKey({ slug: "velvet-sofa", color: "navy" })).toBe("velvet-sofa|navy");
+  });
 });

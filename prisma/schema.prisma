@@ -38,13 +38,15 @@ model User {
 model CartItem {
   userId      String   @db.Uuid
   productSlug String
+  /// 고른 색 id. "" = 원래 색 (색 옵션이 없는 상품도 "")
+  color       String   @default("")
   quantity    Int
   /// 담은 순서 — 목록은 이 순서로 보여 준다(수량을 바꿔도 줄이 움직이지 않게)
   createdAt   DateTime @default(now()) @db.Timestamptz
   updatedAt   DateTime @updatedAt @db.Timestamptz
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id([userId, productSlug])
+  @@id([userId, productSlug, color])
 }
 
 model Order {
@@ -68,13 +70,16 @@ model Order {
 }
 
 model OrderItem {
-  id               String @id @default(uuid(7)) @db.Uuid
-  orderId          String
-  productSlug      String
-  nameSnapshot     String
-  priceSnapshotKRW Int
-  quantity         Int
-  order            Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id                 String  @id @default(uuid(7)) @db.Uuid
+  orderId            String
+  productSlug        String
+  /// 고른 색 id ("" = 원래 색) · 주문 당시 색 이름
+  color              String  @default("")
+  colorLabelSnapshot String?
+  nameSnapshot       String
+  priceSnapshotKRW   Int
+  quantity           Int
+  order              Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
 }

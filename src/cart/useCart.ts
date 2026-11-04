@@ -12,7 +12,7 @@ import {
   type CartResult,
 } from "./actions";
 import { useGuestCart } from "./guest-store";
-import { addLine, cartCount, removeLine, setLine, type CartLine } from "./lines";
+import { addLine, cartCount, lineKey, parseLineKey, removeLine, setLine, type CartLine } from "./lines";
 
 type ServerCart = { lines: CartLine[]; status: "idle" | "syncing" | "synced"; focused: string | null; lastAdded: number };
 const useServerCart = create<ServerCart>(() => ({ lines: [], status: "idle", focused: null, lastAdded: 0 }));
@@ -54,21 +54,26 @@ function writePending(uid: string, want: Record<string, number>) {
     // 저장소를 못 쓰면 예전처럼 메모리로만 동작한다
   }
 }
-/** slug 를 qty 로 맞춰야 한다고 적어 두고, 그 요청이 서버에 닿으면(같은 값일 때만) 지운다 */
-function remember(uid: string, slug: string, qty: number): () => void {
-  writePending(uid, { ...readPending(uid), [slug]: qty });
+/** 줄(lineKey)을 qty 로 맞춰야 한다고 적어 두고, 그 요청이 서버에 닿으면(같은 값일 때만) 지운다 */
+function remember(uid: string, key: string, qty: number): () => void {
+  writePending(uid, { ...readPending(uid), [key]: qty });
   return () => {
     const want = readPending(uid);
-    if (want[slug] !== qty) return; // 그 사이 다른 변경이 덮었다
-    delete want[slug];
+    if (want[key] !== qty) return; // 그 사이 다른 변경이 덮었다
+    delete want[key];
     writePending(uid, want);
   };
 }
 function replay(want: Record<string, number>) {
-  return Object.entries(want).reduce<Promise<unknown>>(
-    (prev, [slug, qty]) => prev.then(() => (qty > 0 ? setCartLineAction(slug, qty) : removeCartLineAction(slug))),
-    Promise.resolve(),
-  );
+  return Object.entries(want).reduce<Promise<unknown>>((prev, [key, qty]) => {
+    const { slug, color = "" } = parseLineKey(key);
+    return prev.then(() => (qty > 0 ? setCartLineAction(slug, qty, color) : removeCartLineAction(slug, color)));
+  }, Promise.resolve());
+}
+
+/** 카탈로그에 없는 색은 원래 색으로 담기므로, 열쇠도 실제로 들어간 줄에서 찾는다 */
+function keyIn(lines: CartLine[], slug: string, color: string): string {
+  return lines.find((l) => l.slug === slug && (l.color ?? "") === color) ? lineKey({ slug, color }) : lineKey({ slug });
 }
 
 function apply(result: CartResult) {
@@ -114,9 +119,9 @@ export function useCart() {
   const server = useServerCart();
   const lines = signedIn ? server.lines : guest.lines;
 
-  const optimistic = (slug: string, next: CartLine[], call: () => Promise<CartResult>) => {
+  const optimistic = (key: string, next: CartLine[], call: () => Promise<CartResult>) => {
     useServerCart.setState({ lines: next });
-    const done = uid ? remember(uid, slug, next.find((l) => l.slug === slug)?.quantity ?? 0) : null;
+    const done = uid ? remember(uid, key, next.find((l) => lineKey(l) === key)?.quantity ?? 0) : null;
     send(async () => {
       const r = await call();
       done?.();
@@ -137,19 +142,21 @@ export function useCart() {
      * 다음 페이지에서 한 번 더 합쳐져 수량이 두 배가 됐다
      */
     ready: auth !== "loading",
-    add(slug: string, qty = 1) {
+    add(slug: string, qty = 1, color = "") {
       if (auth === "loading") return;
       useServerCart.setState({ lastAdded: Date.now() });
-      if (!signedIn) return guest.add(slug, qty);
-      optimistic(slug, addLine(server.lines, slug, qty), () => addToCartAction(slug, qty));
+      if (!signedIn) return guest.add(slug, qty, color);
+      const next = addLine(server.lines, slug, qty, color);
+      optimistic(keyIn(next, slug, color), next, () => addToCartAction(slug, qty, color));
     },
-    set(slug: string, qty: number) {
-      if (!signedIn) return guest.set(slug, qty);
-      optimistic(slug, setLine(server.lines, slug, qty), () => setCartLineAction(slug, qty));
+    set(slug: string, qty: number, color = "") {
+      if (!signedIn) return guest.set(slug, qty, color);
+      const next = setLine(server.lines, slug, qty, color);
+      optimistic(keyIn(next, slug, color), next, () => setCartLineAction(slug, qty, color));
     },
-    remove(slug: string) {
-      if (!signedIn) return guest.remove(slug);
-      optimistic(slug, removeLine(server.lines, slug), () => removeCartLineAction(slug));
+    remove(slug: string, color = "") {
+      if (!signedIn) return guest.remove(slug, color);
+      optimistic(keyIn(server.lines, slug, color), removeLine(server.lines, slug, color), () => removeCartLineAction(slug, color));
     },
   };
 }

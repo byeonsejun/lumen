@@ -13,8 +13,20 @@ describe("priceLines", () => {
   });
   it("줄마다 단가 · 소계", () =>
     expect(priceLines([{ slug: "orbit-coffee-table", quantity: 3 }]).lines[0]).toEqual({
-      slug: "orbit-coffee-table", name: "Orbit 원형 커피 테이블", unitPriceKRW: 540_000, quantity: 3, subtotalKRW: 1_620_000,
+      slug: "orbit-coffee-table", color: "", name: "Orbit 원형 커피 테이블", unitPriceKRW: 540_000, quantity: 3, subtotalKRW: 1_620_000,
     }));
+});
+
+describe("priceLines 색", () => {
+  it("색이 달라도 가격은 같고 줄은 둘", () => {
+    const { lines, totalKRW } = priceLines([{ slug: "velvet-sofa", quantity: 1, color: "navy" }, { slug: "velvet-sofa", quantity: 1 }]);
+    expect(lines).toHaveLength(2);
+    expect(totalKRW).toBe(lines[0].unitPriceKRW * 2);
+    expect(lines.find((l) => l.color === "navy")?.colorLabel).toBe("네이비");
+    expect(lines.find((l) => l.color === "")?.colorLabel).toBeUndefined();
+  });
+  it("모르는 색은 원래 색 줄로 합친다", () =>
+    expect(priceLines([{ slug: "velvet-sofa", quantity: 1, color: "rainbow" }, { slug: "velvet-sofa", quantity: 1 }]).lines).toHaveLength(1));
 });
 
 describe("orderNameOf", () => {

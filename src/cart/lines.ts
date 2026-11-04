@@ -1,26 +1,42 @@
-import { getProduct } from "@/catalog/query";
+import { getProduct, normalizeColor } from "@/catalog/query";
 import { clampQuantity } from "@/commerce/pricing";
 
-export type CartLine = { slug: string; quantity: number };
+/** 장바구니 한 줄 = (상품, 색). color 가 없으면 원래 색 */
+export type CartLine = { slug: string; quantity: number; color?: string };
 
-export function addLine(lines: CartLine[], slug: string, qty = 1): CartLine[] {
+/** 줄을 가리키는 열쇠 — 같은 상품이라도 색이 다르면 다른 줄 */
+export const lineKey = (l: { slug: string; color?: string }) => `${l.slug}|${l.color ?? ""}`;
+
+/** "slug|color" → 줄. 원래 색이면 color 를 적지 않는다 */
+export function parseLineKey(key: string): { slug: string; color?: string } {
+  const [slug, color = ""] = key.split("|");
+  return color ? { slug, color } : { slug };
+}
+
+const line = (slug: string, quantity: number, color: string): CartLine => (color ? { slug, quantity, color } : { slug, quantity });
+
+export function addLine(lines: CartLine[], slug: string, qty = 1, color = ""): CartLine[] {
   if (!getProduct(slug)) return lines;
-  const i = lines.findIndex((l) => l.slug === slug);
-  if (i === -1) return [...lines, { slug, quantity: clampQuantity(qty) }];
-  return lines.map((l, j) => (j === i ? { slug, quantity: clampQuantity(l.quantity + qty) } : l));
+  const c = normalizeColor(slug, color);
+  const key = lineKey({ slug, color: c });
+  const i = lines.findIndex((l) => lineKey(l) === key);
+  if (i === -1) return [...lines, line(slug, clampQuantity(qty), c)];
+  return lines.map((l, j) => (j === i ? line(slug, clampQuantity(l.quantity + qty), c) : l));
 }
 
-export function setLine(lines: CartLine[], slug: string, qty: number): CartLine[] {
-  return lines.map((l) => (l.slug === slug ? { slug, quantity: clampQuantity(qty) } : l));
+export function setLine(lines: CartLine[], slug: string, qty: number, color = ""): CartLine[] {
+  const key = lineKey({ slug, color: normalizeColor(slug, color) });
+  return lines.map((l) => (lineKey(l) === key ? line(slug, clampQuantity(qty), l.color ?? "") : l));
 }
 
-export function removeLine(lines: CartLine[], slug: string): CartLine[] {
-  return lines.filter((l) => l.slug !== slug);
+export function removeLine(lines: CartLine[], slug: string, color = ""): CartLine[] {
+  const key = lineKey({ slug, color: normalizeColor(slug, color) });
+  return lines.filter((l) => lineKey(l) !== key);
 }
 
-/** 로그인 순간 합치기 — 서버 순서를 유지하고 새 상품은 뒤에. 같은 상품은 더해 9 에서 자른다 */
+/** 로그인 순간 합치기 — 서버 순서를 유지하고 새 줄은 뒤에. 같은 (상품, 색)은 더해 9 에서 자른다 */
 export function mergeLines(server: CartLine[], local: CartLine[]): CartLine[] {
-  return [...server, ...local].reduce<CartLine[]>((acc, l) => addLine(acc, l.slug, l.quantity), []);
+  return [...server, ...local].reduce<CartLine[]>((acc, l) => addLine(acc, l.slug, l.quantity, l.color), []);
 }
 
 export function cartCount(lines: CartLine[]): number {

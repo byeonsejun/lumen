@@ -6,9 +6,9 @@ import { addLine, removeLine, setLine, type CartLine } from "./lines";
 
 type GuestCart = {
   lines: CartLine[];
-  add: (slug: string, qty?: number) => void;
-  set: (slug: string, qty: number) => void;
-  remove: (slug: string) => void;
+  add: (slug: string, qty?: number, color?: string) => void;
+  set: (slug: string, qty: number, color?: string) => void;
+  remove: (slug: string, color?: string) => void;
   clear: () => void;
 };
 
@@ -17,9 +17,9 @@ export const useGuestCart = create<GuestCart>()(
   persist(
     (set) => ({
       lines: [],
-      add: (slug, qty = 1) => set((s) => ({ lines: addLine(s.lines, slug, qty) })),
-      set: (slug, qty) => set((s) => ({ lines: setLine(s.lines, slug, qty) })),
-      remove: (slug) => set((s) => ({ lines: removeLine(s.lines, slug) })),
+      add: (slug, qty = 1, color = "") => set((s) => ({ lines: addLine(s.lines, slug, qty, color) })),
+      set: (slug, qty, color = "") => set((s) => ({ lines: setLine(s.lines, slug, qty, color) })),
+      remove: (slug, color = "") => set((s) => ({ lines: removeLine(s.lines, slug, color) })),
       clear: () => set({ lines: [] }),
     }),
     // localStorage 를 못 쓰는 환경(사생활 보호 모드 등)에서도 메모리로 동작한다

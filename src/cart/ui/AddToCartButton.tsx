@@ -7,11 +7,11 @@ const STYLE = {
   overlay: "pointer-events-auto shrink-0 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-bg hover:brightness-110",
 } as const;
 
-/** color: 고른 색 id (원래 색 "") — 장바구니가 색을 받는 건 Task 3 부터 */
+/** color: 고른 색 id (원래 색 "") */
 export function AddToCartButton({ slug, qty = 1, color = "", variant = "primary" }: { slug: string; qty?: number; color?: string; variant?: keyof typeof STYLE }) {
   const cart = useCart();
   return (
-    <button type="button" data-testid="add-to-cart" disabled={!cart.ready} onClick={() => cart.add(slug, qty)} className={`${STYLE[variant]} disabled:opacity-60`}>
+    <button type="button" data-testid="add-to-cart" disabled={!cart.ready} onClick={() => cart.add(slug, qty, color)} className={`${STYLE[variant]} disabled:opacity-60`}>
       담기
     </button>
   );

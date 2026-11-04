@@ -21,3 +21,16 @@ test("색 옵션이 없는 상품은 견본이 없다", async ({ page }) => {
   await expect(page.getByTestId("add-to-cart")).toBeVisible();
   await expect(page.locator("[data-testid^=color-]")).toHaveCount(0);
 });
+
+test("두 색을 담으면 장바구니에 두 줄 · 색 이름이 보인다", async ({ page }) => {
+  await page.goto("/products/velvet-sofa");
+  await page.getByTestId("add-to-cart").click();
+  await expect(page.getByTestId("cart-count")).toHaveText("1");
+  await page.getByTestId("color-navy").click();
+  await page.getByTestId("add-to-cart").click();
+  await expect(page.getByTestId("cart-count")).toHaveText("2");
+  await page.goto("/cart?renderer=none");
+  await expect(page.getByTestId("cart-line-velvet-sofa")).toBeVisible();
+  await expect(page.getByTestId("cart-line-velvet-sofa-navy")).toContainText("네이비");
+  await expect(page.getByTestId("cart-line-velvet-sofa")).not.toContainText("네이비");
+});
