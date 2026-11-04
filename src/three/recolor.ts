@@ -1,15 +1,9 @@
 import { Color, type MeshStandardMaterial } from "three";
 import { clamp, dot, float, length, max, mix, smoothstep, texture, uv, vec3 } from "three/tsl";
 import { MeshStandardNodeMaterial } from "three/webgpu";
+import type { Recolor } from "@/catalog/types";
 
-export type Recolor = {
-  /** 바꿀 색 (sRGB hex) */
-  target: string;
-  /** 텍스처에서 바꿀 부분의 대표색 (sRGB hex). 없으면 재질 전체를 바꾼다 (부위가 따로 나뉜 재질) */
-  key?: string;
-  /** 대표색에서 이만큼(선형 RGB 거리) 안쪽은 다 바꾸고, 두 배 바깥은 그대로 둔다 */
-  tolerance?: number;
-};
+export type { Recolor };
 
 const W = vec3(0.2126, 0.7152, 0.0722);
 
