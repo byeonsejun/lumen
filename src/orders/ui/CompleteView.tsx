@@ -35,8 +35,7 @@ export function CompleteView({ orderId, totalKRW, paidAt, items }: Props) {
         </Stage3D>
       </div>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-bg via-bg/70 to-transparent px-5 pb-10 pt-24 sm:px-10">
-        <p className="text-xs tracking-[0.3em] text-accent">ORDER COMPLETE</p>
-        <h1 className="mt-2 text-3xl font-light sm:text-4xl">주문이 완료됐어요</h1>
+        <h1 className="text-4xl font-light sm:text-5xl">주문이 완료됐어요</h1>
         <p className="mt-3 text-sm text-muted">
           주문 번호 <span className="font-mono text-fg">{orderId}</span>
         </p>
