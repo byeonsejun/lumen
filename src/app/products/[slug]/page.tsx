@@ -21,7 +21,7 @@ export default async function ProductPage({ params }: { params: Params }) {
   const product = getProduct((await params).slug);
   if (!product) notFound();
   return (
-    <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-20 pt-20 sm:px-8 lg:grid-cols-[1.4fr_1fr] lg:pt-24">
+    <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-20 pt-20 sm:px-8 lg:grid-cols-[1.4fr_1fr] lg:items-center lg:pt-24 2xl:max-w-7xl">
       <ProductViewer product={product} />
       <div className="lg:pt-6">
         <Link href={`/products?category=${product.category}`} className="inline-flex min-h-6 items-center text-xs text-muted hover:text-fg">

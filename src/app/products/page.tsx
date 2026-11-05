@@ -33,18 +33,21 @@ async function Catalog({ searchParams }: { searchParams: SearchParams }) {
   ];
   return (
     <>
-      <nav aria-label="카테고리" className="mt-6 flex flex-wrap gap-2 text-sm">
-        {tabs.map((t) => (
-          <Link
-            key={t.href}
-            href={t.href}
-            aria-current={t.active ? "page" : undefined}
-            className={`rounded-full border px-3 py-1 ${t.active ? "border-accent text-accent" : "border-line text-muted hover:text-fg"}`}
-          >
-            {t.label}
-          </Link>
-        ))}
-      </nav>
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+        <nav aria-label="카테고리" className="flex flex-wrap gap-2 text-sm">
+          {tabs.map((t) => (
+            <Link
+              key={t.href}
+              href={t.href}
+              aria-current={t.active ? "page" : undefined}
+              className={`rounded-full border px-3 py-1 ${t.active ? "border-accent text-accent" : "border-line text-muted hover:text-fg"}`}
+            >
+              {t.label}
+            </Link>
+          ))}
+        </nav>
+        <p className="text-xs text-muted tabular-nums">가구 {products.length}점</p>
+      </div>
       <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
         {products.map((p) => (
           <ProductCard key={p.slug} product={p} />
