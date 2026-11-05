@@ -2,10 +2,16 @@
 
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
-import { acceptWindow, nextTier } from "./policy";
+import { NO_BLOCKS, acceptWindow, capFor, nextTier, recordDrop, type TierBlocks } from "./policy";
 import { useQuality } from "./store";
 
 const WINDOW_MS = 1000;
+
+/**
+ * 실패한 단계 기록 — 품질 단계처럼 페이지를 옮겨도 이어진다(캔버스는 페이지마다 새로 생긴다).
+ * 없으면 쇼룸에서 막아 둔 단계를 상세에 들어가자마자 다시 시도했다
+ */
+const blocks: { current: TierBlocks } = { current: NO_BLOCKS };
 
 /** 1초 창마다 평균 fps 를 재서 품질 단계를 조절한다 */
 export function AdaptiveQuality() {
@@ -28,7 +34,8 @@ export function AdaptiveQuality() {
     s.pushFps({ avgFps, durationMs: elapsed });
     if (!s.adaptive) return;
     const { windows, tier, ceiling } = useQuality.getState();
-    const next = nextTier(tier, windows, ceiling);
+    const next = nextTier(tier, windows, capFor(ceiling, blocks.current, now));
+    if (next < tier) blocks.current = recordDrop(blocks.current, tier, now);
     if (next !== tier) {
       s.setTier(next);
       useQuality.setState({ windows: [] }); // 단계를 바꾼 뒤엔 새 측정으로 판단한다
