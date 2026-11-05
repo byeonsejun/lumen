@@ -46,8 +46,10 @@ export function RoomScene({ layout, focused = null, onPick, lights = "on", touch
   // 탁자 몫의 스포트까지 두 번 받아 하얗게 날아갔다
   const spotFor = useMemo(() => placements.filter((p) => p.level === "floor").slice(0, MAX_SPOTS), [placements]);
   const glowFor = useMemo(() => placements.filter((p) => p.level === "ceiling"), [placements]);
-  // 같은 가구가 여러 개여도 전부 비추도록 (첫 번째 것만 비추던 문제)
-  const beam = useMemo(() => focusBeam(placements, focused), [placements, focused]);
+  // 고른 가구가 자기 스포트를 가진 바닥 가구면 그 스포트들만 켠다. 같은 가구가 여러 개일 때 넓은 빛 하나로
+  // 가운데를 겨누면 그 사이 탁자가 하얗게 떴다. 스포트가 없는 가구(상판 · 선반 위, 7번째부터)만 강조 조명을 쓴다
+  const ownSpot = useMemo(() => !!focused && spotFor.some((p) => `${p.slug}|${p.color ?? ""}` === focused), [spotFor, focused]);
+  const beam = useMemo(() => (ownSpot ? null : focusBeam(placements, focused)), [ownSpot, placements, focused]);
 
   useEffect(() => {
     camera.position.set(0, size * 0.62 + 0.6, size * 0.95 + 1.2);
@@ -69,11 +71,13 @@ export function RoomScene({ layout, focused = null, onPick, lights = "on", touch
       if (!s) return;
       const p = spotFor[i];
       // 차례로 켜지는 연출도 끝 밝기는 평소(0.6)와 같다 — 1 이면 흰 상판이 하얗게 날아갔다
-      const on = lights === "off" ? 0 : seq ? (t > (i + 1) * SEQ_STEP ? 0.6 : 0) : focused ? 0 : 0.6;
-      s.intensity = k(s.intensity, (focused === `${p.slug}|${p.color ?? ""}` ? 0 : 60) * on);
+      const mine = focused === `${p.slug}|${p.color ?? ""}`;
+      const on = lights === "off" ? 0 : seq ? (t > (i + 1) * SEQ_STEP ? 0.6 : 0) : focused ? (mine && ownSpot ? 2 : 0) : 0.6;
+      s.intensity = k(s.intensity, 60 * on);
     });
     if (focusSpot.current) {
-      focusSpot.current.intensity = k(focusSpot.current.intensity, beam ? 140 : 0);
+      // 이 조명은 이제 상판 · 선반 위 가구용이라 받는 면이 조명에 0.5m 가까이 붙어 있다 — 바닥 기준(140)이면 흰 상판이 날아갔다
+      focusSpot.current.intensity = k(focusSpot.current.intensity, beam ? 70 : 0);
       if (beam) {
         focusSpot.current.position.set(...beam.position);
         focusSpot.current.angle = beam.angle;
@@ -113,6 +117,9 @@ export function RoomScene({ layout, focused = null, onPick, lights = "on", touch
           intensity={0}
           castShadow={preset.shadows && i < 2}
           shadow-mapSize={[preset.shadowMapSize, preset.shadowMapSize]}
+          // 위에서 수직으로 내리는 빛이라 평평한 흰 상판에 그림자 얼룩(acne)이 점점이 생겼다
+          shadow-bias={-0.0005}
+          shadow-normalBias={0.03}
         />
       ))}
       {glowFor.map((p, i) => (
@@ -152,6 +159,8 @@ export function RoomScene({ layout, focused = null, onPick, lights = "on", touch
               id={getProduct(p.slug)!.polyhavenId}
               dimensionsMm={getProduct(p.slug)!.dimensionsMm}
               recolor={p.color ? colorOption(p.slug, p.color)?.recolor : undefined}
+              // 펜던트는 그 자체가 빛이다 — 위 스포트가 펜던트 그림자를 바로 아래 탁자에 찍지 않게
+              castShadow={p.level !== "ceiling"}
               onClick={onPick ? () => onPick(`${p.slug}|${p.color ?? ""}`) : undefined}
             />
             {p.label && (
