@@ -34,7 +34,7 @@ describe("cart repo", () => {
 
   it("로그인 순간 합치기는 9 에서 자른다", async () => {
     await writeLine(u, "ember-sofa", 6);
-    expect(await mergeIntoCart(u, [{ slug: "ember-sofa", quantity: 5 }, { slug: "ghost", quantity: 1 }])).toEqual([{ slug: "ember-sofa", quantity: 9 }]);
+    expect(await mergeIntoCart(u, [{ slug: "ember-sofa", quantity: 5 }, { slug: "ghost", quantity: 1 }], "merge-11111111")).toEqual([{ slug: "ember-sofa", quantity: 9 }]);
   });
 
   it("같은 상품 두 색은 두 줄 · 없는 색 id 는 원래 색", async () => {
@@ -51,10 +51,34 @@ describe("cart repo", () => {
 
   it("mergeIntoCart 는 색별로 합친다", async () => {
     await writeLine(u, "velvet-sofa", 1, "navy");
-    expect(await mergeIntoCart(u, [{ slug: "velvet-sofa", quantity: 1, color: "navy" }, { slug: "velvet-sofa", quantity: 1 }])).toEqual([
+    expect(await mergeIntoCart(u, [{ slug: "velvet-sofa", quantity: 1, color: "navy" }, { slug: "velvet-sofa", quantity: 1 }], "merge-22222222")).toEqual([
       { slug: "velvet-sofa", quantity: 2, color: "navy" },
       { slug: "velvet-sofa", quantity: 1 },
     ]);
+  });
+
+  it("같은 합치기 번호로 두 번 받으면 한 번만 더한다 (응답이 끊겨 다시 보낸 경우)", async () => {
+    await writeLine(u, "ember-sofa", 1);
+    const local = [{ slug: "ember-sofa", quantity: 2 }];
+    await mergeIntoCart(u, local, "merge-aaaaaaaa");
+    expect(await mergeIntoCart(u, local, "merge-aaaaaaaa")).toEqual([{ slug: "ember-sofa", quantity: 3 }]);
+  });
+
+  it("같은 번호가 동시에 두 번 와도 한 번만 더한다 (탭 두 개)", async () => {
+    const local = [{ slug: "ember-sofa", quantity: 2 }];
+    await Promise.all([mergeIntoCart(u, local, "merge-bbbbbbbb"), mergeIntoCart(u, local, "merge-bbbbbbbb")]);
+    expect(await readCart(u)).toEqual([{ slug: "ember-sofa", quantity: 2 }]);
+  });
+
+  it("번호가 다르면 새 합치기로 보고 더한다", async () => {
+    await mergeIntoCart(u, [{ slug: "ember-sofa", quantity: 1 }], "merge-cccccccc");
+    expect(await mergeIntoCart(u, [{ slug: "ember-sofa", quantity: 1 }], "merge-dddddddd")).toEqual([{ slug: "ember-sofa", quantity: 2 }]);
+  });
+
+  it("합치기 번호는 사용자마다 따로 — 다른 사람이 같은 번호를 써도 막히지 않는다", async () => {
+    const other = track(await createDemoUser()).id;
+    await mergeIntoCart(other, [{ slug: "ember-sofa", quantity: 1 }], "merge-eeeeeeee");
+    expect(await mergeIntoCart(u, [{ slug: "ember-sofa", quantity: 1 }], "merge-eeeeeeee")).toEqual([{ slug: "ember-sofa", quantity: 1 }]);
   });
 
   it("주문한 수량만 뺀다", async () => {

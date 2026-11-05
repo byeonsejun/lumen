@@ -71,6 +71,28 @@ test("로그인 확인 중에 누른 담기가 두 번 들어가지 않는다", 
   await expect(page.getByTestId("cart-count")).toHaveText("1");
 });
 
+test("로그인 순간 합치기 응답이 끊겨 다시 보내도 한 번만 합쳐진다", async ({ page }) => {
+  await page.goto("/products/ember-sofa");
+  await page.getByTestId("add-to-cart").click();
+  await expect(page.getByTestId("cart-count")).toHaveText("1");
+  // 합치기 요청은 서버까지 가되 응답은 브라우저에 닿지 않게 한다 — 브라우저는 합쳐졌는지 모른 채 장바구니를 들고 있다
+  await page.route("**/*", async (route) => {
+    if (route.request().method() === "POST" && route.request().headers()["next-action"]) {
+      await route.fetch();
+      await route.abort();
+    } else await route.fallback();
+  });
+  await loginAsDemo(page, "/products/ember-sofa");
+  await page.waitForTimeout(3000);
+  await page.unrouteAll({ behavior: "ignoreErrors" });
+  await page.reload(); // 다시 열리면 같은 내용 · 같은 번호로 합치기를 다시 보낸다
+  await cartSettled(page);
+  await expect(page.getByTestId("cart-count")).toHaveText("1");
+  await page.reload();
+  await cartSettled(page);
+  await expect(page.getByTestId("cart-count")).toHaveText("1");
+});
+
 test("쇼룸 둘러보기 이름표 옆 + 로 담는다", async ({ page }) => {
   await page.goto("/");
   await scrollShowroom(page, featured.length + 3);

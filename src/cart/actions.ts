@@ -33,6 +33,9 @@ export async function setCartLineAction(slug: string, qty: number, color = ""): 
 export async function removeCartLineAction(slug: string, color = ""): Promise<CartResult> {
   return withViewer((id) => writeLine(id, slug, 0, color));
 }
-export async function mergeGuestCartAction(lines: CartLine[]): Promise<CartResult> {
-  return withViewer((id) => mergeIntoCart(id, Array.isArray(lines) ? lines.slice(0, 50) : []));
+/** 합치기 번호가 이상하면(옛 탭 · 손댄 요청) 새 번호로 — 이번 한 번은 중복 방지 없이 예전처럼 합친다 */
+const MERGE_ID = /^[A-Za-z0-9-]{8,64}$/;
+export async function mergeGuestCartAction(lines: CartLine[], mergeId?: string): Promise<CartResult> {
+  const key = typeof mergeId === "string" && MERGE_ID.test(mergeId) ? mergeId : crypto.randomUUID();
+  return withViewer((id) => mergeIntoCart(id, Array.isArray(lines) ? lines.slice(0, 50) : [], key));
 }
