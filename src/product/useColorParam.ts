@@ -12,10 +12,12 @@ const useStore = create<{ slug: string; color: string }>(() => ({ slug: "", colo
 
 export function useColorParam(slug: string): [color: string, setColor: (id: string) => void] {
   const { slug: current, color } = useStore();
+  // 주소가 기준이다. 상세가 열릴 때 주소에서 읽고, 닫힐 때 비운다.
+  // 비우지 않으면 화면 안 이동으로 같은 상품에 돌아왔을 때 앞에서 고른 색이 주소와 상관없이 남았다
   useEffect(() => {
-    if (current === slug) return;
     useStore.setState({ slug, color: normalizeColor(slug, new URLSearchParams(window.location.search).get("color")) });
-  }, [slug, current]);
+    return () => useStore.setState({ slug: "", color: "" });
+  }, [slug]);
   const setColor = (id: string) => {
     const next = normalizeColor(slug, id);
     useStore.setState({ slug, color: next });

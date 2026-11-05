@@ -46,7 +46,7 @@ export function CartList({ lines, focused, onFocus, onSet, onRemove }: Props) {
               <Image src={posterUrl(p.polyhavenId, 256)} alt="" fill sizes="80px" className="object-contain p-2" />
             </div>
             <div className="flex min-w-0 flex-1 flex-col">
-              <Link href={`/products/${p.slug}`} className="truncate text-sm hover:text-accent">
+              <Link href={color ? `/products/${p.slug}?color=${color}` : `/products/${p.slug}`} className="truncate text-sm hover:text-accent">
                 {p.name}
               </Link>
               <ColorBadge slug={l.slug} color={color} />
