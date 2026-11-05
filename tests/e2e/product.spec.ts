@@ -12,7 +12,7 @@ test("상세에 이름·가격·출처가 있다", async ({ page }) => {
 });
 
 test("3D 뷰어와 치수 토글", async ({ page }) => {
-  await page.goto(`/products/${p.slug}`);
+  await page.goto(`/products/${p.slug}?renderer=webgl2`);
   await expect(page.getByTestId("stage-canvas")).toBeVisible();
   await page.getByRole("button", { name: "치수 보기" }).click();
   await expect(page.getByTestId("dimension-label")).toHaveCount(3);

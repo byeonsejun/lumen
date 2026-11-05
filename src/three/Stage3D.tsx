@@ -31,6 +31,7 @@ async function initTier(search: URLSearchParams) {
   tierInitialized = true;
   const s = useQuality.getState();
   s.setAdaptive(search.get("adaptive") !== "off");
+  s.setCanGiveUp(forcedCapability(search) === undefined);
   const forced = parseTier(search.get("tier"));
   if (forced !== undefined) {
     s.setTier(forced);
@@ -52,12 +53,15 @@ export function Stage3D({ poster, posterAlt, className, children, fallback }: Pr
   // ssr:false 로만 쓰므로 window 를 바로 읽는다
   const [debug] = useState(() => new URLSearchParams(window.location.search).has("debug"));
   const tier = useQuality((s) => s.tier);
+  const gaveUp = useQuality((s) => s.gaveUp);
   const preset = QUALITY_PRESETS[tier];
 
   useEffect(() => {
     const search = new URLSearchParams(window.location.search);
     let alive = true;
     // 3D 초기화(GPU 판정·렌더러·모델 디코딩)는 메인 스레드를 오래 잡는다 — 글자와 포스터가 먼저 그려지게 load 뒤 유휴 시간까지 미룬다
+    // 이 방문에서 이미 3D 를 포기했으면 다시 시도하지 않는다(시도할 때마다 몇 초씩 멈춘다)
+    if (useQuality.getState().gaveUp) return;
     afterFirstPaint().then(() => { if (alive) void Promise.all([detectRenderCapability({ ...browserEnv(), force: forcedCapability(search) }), initTier(search)]).then(
       ([c]) => {
         if (!alive) return;
@@ -70,7 +74,7 @@ export function Stage3D({ poster, posterAlt, className, children, fallback }: Pr
     };
   }, []);
 
-  if (cap === "none") {
+  if (cap === "none" || gaveUp) {
     if (fallback !== undefined) return <>{fallback}</>;
     // eslint-disable-next-line @next/next/no-img-element
     return <img data-testid="stage-fallback" src={poster} alt={posterAlt} className={`${className ?? ""} object-contain`} />;

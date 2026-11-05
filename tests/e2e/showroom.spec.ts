@@ -39,7 +39,7 @@ test("렌더링 불가 환경에서도 쇼룸 정보는 읽힌다", async ({ pag
 });
 
 test("끝까지 스크롤하면 방을 둘러보고, 가구를 누르면 상세로 간다", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/?renderer=webgl2");
   await scrollToSegment(page, segments);
   await expect(page.getByTestId("showroom-explore")).toBeVisible();
   const target = featured[1];
