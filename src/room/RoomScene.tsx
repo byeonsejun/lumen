@@ -117,6 +117,9 @@ export function RoomScene({ layout, focused = null, onPick, lights = "on", touch
           intensity={0}
           castShadow={preset.shadows && i < 2}
           shadow-mapSize={[preset.shadowMapSize, preset.shadowMapSize]}
+          // 위에서 수직으로 내리는 빛이라 평평한 흰 상판에 그림자 얼룩(acne)이 점점이 생겼다
+          shadow-bias={-0.0005}
+          shadow-normalBias={0.03}
         />
       ))}
       {glowFor.map((p, i) => (
@@ -156,6 +159,8 @@ export function RoomScene({ layout, focused = null, onPick, lights = "on", touch
               id={getProduct(p.slug)!.polyhavenId}
               dimensionsMm={getProduct(p.slug)!.dimensionsMm}
               recolor={p.color ? colorOption(p.slug, p.color)?.recolor : undefined}
+              // 펜던트는 그 자체가 빛이다 — 위 스포트가 펜던트 그림자를 바로 아래 탁자에 찍지 않게
+              castShadow={p.level !== "ceiling"}
               onClick={onPick ? () => onPick(`${p.slug}|${p.color ?? ""}`) : undefined}
             />
             {p.label && (
