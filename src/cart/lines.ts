@@ -24,13 +24,16 @@ export function addLine(lines: CartLine[], slug: string, qty = 1, color = ""): C
   return lines.map((l, j) => (j === i ? line(slug, clampQuantity(l.quantity + qty), c) : l));
 }
 
+/** 수량 바꾸기 · 빼기는 모르는 색이면 그대로 둔다 — 원래 색으로 읽으면 엉뚱한 줄이 바뀐다 */
 export function setLine(lines: CartLine[], slug: string, qty: number, color = ""): CartLine[] {
-  const key = lineKey({ slug, color: normalizeColor(slug, color) });
+  if (normalizeColor(slug, color) !== color) return lines;
+  const key = lineKey({ slug, color });
   return lines.map((l) => (lineKey(l) === key ? line(slug, clampQuantity(qty), l.color ?? "") : l));
 }
 
 export function removeLine(lines: CartLine[], slug: string, color = ""): CartLine[] {
-  const key = lineKey({ slug, color: normalizeColor(slug, color) });
+  if (normalizeColor(slug, color) !== color) return lines;
+  const key = lineKey({ slug, color });
   return lines.filter((l) => lineKey(l) !== key);
 }
 

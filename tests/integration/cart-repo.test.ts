@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createDemoUser } from "@/server/users";
-import { mergeIntoCart, readCart, subtractOrdered, writeLine } from "@/cart/repo";
+import { addToLine, mergeIntoCart, readCart, subtractOrdered, writeLine } from "@/cart/repo";
 import { track } from "./helpers";
 
 const session = vi.hoisted(() => ({ current: null as null | { viewer: { id: string; name: string | null; isDemo: boolean } } }));
@@ -37,16 +37,23 @@ describe("cart repo", () => {
     expect(await mergeIntoCart(u, [{ slug: "ember-sofa", quantity: 5 }, { slug: "ghost", quantity: 1 }], "merge-11111111")).toEqual([{ slug: "ember-sofa", quantity: 9 }]);
   });
 
-  it("같은 상품 두 색은 두 줄 · 없는 색 id 는 원래 색", async () => {
+  it("같은 상품 두 색은 두 줄 · 담을 때 없는 색 id 는 원래 색", async () => {
     await writeLine(u, "velvet-sofa", 1);
     await writeLine(u, "velvet-sofa", 2, "navy");
-    await writeLine(u, "velvet-sofa", 1, "rainbow");
+    await addToLine(u, "velvet-sofa", 1, "rainbow");
     expect(await readCart(u)).toEqual([
-      { slug: "velvet-sofa", quantity: 1 },
+      { slug: "velvet-sofa", quantity: 2 },
       { slug: "velvet-sofa", quantity: 2, color: "navy" },
     ]);
     await writeLine(u, "velvet-sofa", 0, "navy");
-    expect(await readCart(u)).toEqual([{ slug: "velvet-sofa", quantity: 1 }]);
+    expect(await readCart(u)).toEqual([{ slug: "velvet-sofa", quantity: 2 }]);
+  });
+
+  it("없는 색으로 빼거나 수량을 바꾸면 아무 줄도 건드리지 않는다", async () => {
+    await writeLine(u, "velvet-sofa", 2);
+    await writeLine(u, "velvet-sofa", 0, "rainbow");
+    await writeLine(u, "velvet-sofa", 5, "rainbow");
+    expect(await readCart(u)).toEqual([{ slug: "velvet-sofa", quantity: 2 }]);
   });
 
   it("mergeIntoCart 는 색별로 합친다", async () => {
