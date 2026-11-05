@@ -8,8 +8,9 @@ import { colorOption } from "@/catalog/query";
 import { posterUrl } from "@/three/models";
 import { useColorParam } from "./useColorParam";
 
+// 데스크톱에서는 비율 대신 화면 높이에 맞춘다 — 4:3 이면 넓은 화면에서 뷰어 아래가 통째로 비었다
 const STAGE_CLASS =
-  "aspect-square w-full overflow-hidden rounded-sm bg-[radial-gradient(ellipse_at_50%_40%,#231e19,#0b0a09_70%)] sm:aspect-[4/3]";
+  "aspect-square w-full overflow-hidden rounded-sm bg-[radial-gradient(ellipse_at_50%_40%,#231e19,#0b0a09_70%)] sm:aspect-[4/3] lg:aspect-auto lg:h-[clamp(460px,calc(100svh-12rem),780px)]";
 
 // 로딩 중에도 같은 크기를 잡아 레이아웃이 밀리지 않게 한다 (CLS)
 const Stage3D = dynamic(loadStage3D, {
