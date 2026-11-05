@@ -97,13 +97,14 @@ export function CartSync() {
     }
     useServerCart.setState({ status: "syncing" });
     const guest = useGuestCart.getState().lines;
+    const mergeId = guest.length ? useGuestCart.getState().mergeIdFor() : undefined;
     const pending = uid ? readPending(uid) : {};
     send(async () => {
       if (Object.keys(pending).length) {
         await replay(pending);
         if (uid) writePending(uid, {});
       }
-      const r = await (guest.length ? mergeGuestCartAction(guest) : getCartAction());
+      const r = await (guest.length ? mergeGuestCartAction(guest, mergeId) : getCartAction());
       if (r.ok && guest.length) useGuestCart.getState().clear();
       return r;
     });
