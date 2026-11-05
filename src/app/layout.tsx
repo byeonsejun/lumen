@@ -42,7 +42,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </a>
           {" · "}CC0
           {" · "}
-          <Link href="/privacy" className="underline hover:text-fg">
+          {/* 좁은 화면에서 "개인정보처리방" / "침" 으로 끊기지 않게 링크는 한 덩어리로 넘긴다 */}
+          <Link href="/privacy" className="whitespace-nowrap underline hover:text-fg">
             개인정보처리방침
           </Link>
           <p className="mt-2">Copyright © 2026 BYUN SEJUN. All Rights Reserved.</p>
