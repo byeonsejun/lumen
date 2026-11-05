@@ -45,6 +45,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Link href="/privacy" className="underline hover:text-fg">
             개인정보처리방침
           </Link>
+          <p className="mt-2">Copyright © 2026 BYUN SEJUN. All Rights Reserved.</p>
         </footer>
         <CartToast />
         </Providers>
