@@ -53,3 +53,15 @@ export function capFor(ceiling: QualityTier, blocks: TierBlocks, now: number): Q
   }
   return ceiling;
 }
+
+/**
+ * 최저 품질(0단계)에서도 4초 연속 10fps 가 안 나오면 3D 를 포기하고 사진으로 바꾼다.
+ * 소프트웨어 렌더러 이름으로 못 잡은 기기(처음 보는 이름 · 아주 오래된 GPU)를 위한 안전망이다
+ */
+const GIVE_UP_BELOW = 10;
+const GIVE_UP_WINDOWS = 4;
+export function tooSlowFor3D(tier: QualityTier, recent: FpsWindow[]): boolean {
+  if (tier !== 0) return false;
+  const last = recent.slice(-GIVE_UP_WINDOWS);
+  return last.length === GIVE_UP_WINDOWS && last.every((w) => w.durationMs <= MAX_WINDOW_MS && w.avgFps < GIVE_UP_BELOW);
+}

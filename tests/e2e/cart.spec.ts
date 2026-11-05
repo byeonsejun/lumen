@@ -94,7 +94,7 @@ test("로그인 순간 합치기 응답이 끊겨 다시 보내도 한 번만 �
 });
 
 test("쇼룸 둘러보기 이름표 옆 + 로 담는다", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/?renderer=webgl2"); // 헤드리스는 GPU 가 없어 기본이 사진 — 3D 를 직접 켠다
   await scrollShowroom(page, featured.length + 3);
   await expect(page.getByTestId("showroom-explore")).toBeVisible();
   await page.getByTestId(`room-add-${featured[1].slug}`).click();
@@ -155,6 +155,7 @@ test("담은 가구가 목록과 방에 나온다", async ({ page }) => {
   await page.goto("/cart");
   await expect(page.getByTestId("cart-line-ember-sofa")).toBeVisible();
   await expect(page.getByTestId("cart-line-orbit-coffee-table")).toBeVisible();
+  await page.goto("/cart?renderer=webgl2");
   await expect(page.getByTestId("stage-canvas")).toBeVisible();
   await expect(page.getByTestId("cart-total")).toHaveText("2,430,000원");
 });

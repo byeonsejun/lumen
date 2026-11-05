@@ -2,7 +2,7 @@
 
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
-import { NO_BLOCKS, acceptWindow, capFor, nextTier, recordDrop, type TierBlocks } from "./policy";
+import { NO_BLOCKS, acceptWindow, capFor, nextTier, recordDrop, tooSlowFor3D, type TierBlocks } from "./policy";
 import { useQuality } from "./store";
 
 const WINDOW_MS = 1000;
@@ -32,6 +32,7 @@ export function AdaptiveQuality() {
       return;
     }
     s.pushFps({ avgFps, durationMs: elapsed });
+    if (s.canGiveUp && tooSlowFor3D(s.tier, useQuality.getState().windows)) return s.giveUp();
     if (!s.adaptive) return;
     const { windows, tier, ceiling } = useQuality.getState();
     const next = nextTier(tier, windows, capFor(ceiling, blocks.current, now));

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NO_BLOCKS, capFor, initialTier, nextTier, recordDrop } from "@/three/quality/policy";
+import { NO_BLOCKS, capFor, initialTier, nextTier, recordDrop, tooSlowFor3D } from "@/three/quality/policy";
 import { QUALITY_PRESETS } from "@/three/quality/presets";
 
 const w = (avgFps: number, durationMs = 1000) => ({ avgFps, durationMs });
@@ -56,6 +56,14 @@ describe("한 번 실패한 단계로 바로 돌아가지 않는다 (오르내�
     const b = recordDrop(NO_BLOCKS, 2, 0);
     expect(nextTier(1, [w(60), w(60)], capFor(2, b, 5_000))).toBe(1);
   });
+});
+
+describe("최저 품질에서도 너무 느리면 사진으로", () => {
+  it("0단계에서 4초 연속 10fps 미만이면 포기한다", () => expect(tooSlowFor3D(0, [w(7), w(6), w(8), w(7)])).toBe(true));
+  it("한 창이라도 10 이상이면 계속 그린다", () => expect(tooSlowFor3D(0, [w(7), w(12), w(8), w(7)])).toBe(false));
+  it("창이 4개 모이기 전엔 판단하지 않는다", () => expect(tooSlowFor3D(0, [w(5), w(5), w(5)])).toBe(false));
+  it("아직 내릴 단계가 남았으면 먼저 내린다", () => expect(tooSlowFor3D(1, [w(5), w(5), w(5), w(5)])).toBe(false));
+  it("탭 숨김 같은 긴 창은 세지 않는다", () => expect(tooSlowFor3D(0, [w(1, 9000), w(5), w(5), w(5)])).toBe(false));
 });
 
 describe("QUALITY_PRESETS", () => {

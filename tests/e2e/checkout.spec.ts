@@ -85,6 +85,7 @@ test("완료 화면 — 주문 번호 · 합계 · 3D 방", async ({ page }) => 
   await expect(page.getByText(orderId)).toBeVisible();
   await expect(page.getByTestId("complete-total")).toHaveText("2,210,000원");
   await expect(page.getByText("테스트 결제입니다. 실제 배송되지 않아요")).toBeVisible();
+  await page.goto(`/orders/${orderId}/complete?renderer=webgl2`);
   await expect(page.getByTestId("stage-canvas")).toBeVisible();
   await expect(page.getByTestId("complete-room")).toHaveAttribute("data-lights", "sequence");
 });
