@@ -12,26 +12,30 @@ export async function readCart(userId: string, tx: Prisma.TransactionClient = db
     .map((r) => (r.color ? { slug: r.productSlug, quantity: r.quantity, color: r.color } : { slug: r.productSlug, quantity: r.quantity }));
 }
 
-/** qty 0 이하면 삭제, 1~9 clamp, 모르는 상품은 무시, 모르는 색은 원래 색 */
+/**
+ * 줄 하나를 qty 로 맞춘다. qty 0 이하면 삭제, 1~9 clamp, 모르는 상품은 무시.
+ * 모르는 색도 무시한다 — 원래 색으로 바꿔 읽으면 "없는 색 빼기"가 원래 색 줄을 지웠다
+ */
 export async function writeLine(userId: string, slug: string, qty: number, color = ""): Promise<void> {
   if (!getProduct(slug)) return;
-  const c = normalizeColor(slug, color);
+  if (normalizeColor(slug, color) !== color) return;
   if (qty <= 0) {
-    await db().cartItem.deleteMany({ where: { userId, productSlug: slug, color: c } });
+    await db().cartItem.deleteMany({ where: { userId, productSlug: slug, color } });
     return;
   }
   const quantity = clampQuantity(qty);
   await db().cartItem.upsert({
-    where: { userId_productSlug_color: { userId, productSlug: slug, color: c } },
-    create: { userId, productSlug: slug, color: c, quantity },
+    where: { userId_productSlug_color: { userId, productSlug: slug, color } },
+    create: { userId, productSlug: slug, color, quantity },
     update: { quantity },
   });
 }
 
+/** 담기는 모르는 색을 원래 색으로 담는다(옛 링크의 ?color= 가 사라진 색이어도 담기는 된다) */
 export async function addToLine(userId: string, slug: string, qty: number, color = ""): Promise<void> {
-  const key = lineKey({ slug, color: normalizeColor(slug, color) });
-  const current = (await readCart(userId)).find((l) => lineKey(l) === key)?.quantity ?? 0;
-  await writeLine(userId, slug, current + qty, color);
+  const c = normalizeColor(slug, color);
+  const current = (await readCart(userId)).find((l) => lineKey(l) === lineKey({ slug, color: c }))?.quantity ?? 0;
+  await writeLine(userId, slug, current + qty, c);
 }
 
 /**

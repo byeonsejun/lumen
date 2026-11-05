@@ -17,6 +17,28 @@ test("원래 색으로 돌아오면 주소에서 색이 빠진다", async ({ pag
   await expect(page).not.toHaveURL(/color=/);
 });
 
+test("다른 페이지에 갔다 같은 상품으로 돌아오면 고른 색이 남아 있지 않다", async ({ page }) => {
+  await page.goto("/products/velvet-sofa");
+  await page.getByTestId("color-navy").click();
+  await expect(page).toHaveURL(/color=navy/);
+  // 화면 안 이동(새로고침 없음) — 전에는 앞에서 고른 네이비가 그대로 남았다
+  await page.locator('header a[href="/products"]').click();
+  await page.locator('[data-testid=product-card][href="/products/velvet-sofa"]').click();
+  await expect(page).toHaveURL(/\/products\/velvet-sofa$/);
+  await expect(page.getByTestId("color-ivory")).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByTestId("color-navy")).toHaveAttribute("aria-pressed", "false");
+});
+
+test("장바구니의 색 줄을 누르면 그 색으로 상세가 열린다", async ({ page }) => {
+  await page.goto("/products/velvet-sofa?color=navy");
+  await page.getByTestId("add-to-cart").click();
+  await expect(page.getByTestId("cart-count")).toHaveText("1");
+  await page.goto("/cart?renderer=none");
+  await page.getByTestId("cart-line-velvet-sofa-navy").getByRole("link").first().click();
+  await expect(page).toHaveURL(/\/products\/velvet-sofa\?color=navy$/);
+  await expect(page.getByTestId("color-navy")).toHaveAttribute("aria-pressed", "true");
+});
+
 test("색 옵션이 없는 상품은 견본이 없다", async ({ page }) => {
   await page.goto("/products/orbit-coffee-table");
   await expect(page.getByTestId("add-to-cart")).toBeVisible();

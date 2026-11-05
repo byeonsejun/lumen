@@ -34,6 +34,11 @@ describe("cart lines", () => {
     expect(setLine(l, "velvet-sofa", 3)).toEqual([{ slug: "velvet-sofa", quantity: 3 }, { slug: "velvet-sofa", quantity: 1, color: "navy" }]);
   });
   it("카탈로그에 없는 색은 원래 색으로 담는다", () => expect(addLine([], "velvet-sofa", 1, "rainbow")).toEqual([{ slug: "velvet-sofa", quantity: 1 }]));
+  it("없는 색으로 빼거나 수량을 바꾸면 원래 색 줄을 건드리지 않는다", () => {
+    const lines = [{ slug: "velvet-sofa", quantity: 2 }];
+    expect(removeLine(lines, "velvet-sofa", "rainbow")).toEqual(lines);
+    expect(setLine(lines, "velvet-sofa", 5, "rainbow")).toEqual(lines);
+  });
   it("mergeLines 는 lineKey 로 더하고 9 에서 자른다", () =>
     expect(mergeLines([{ slug: "velvet-sofa", quantity: 6, color: "navy" }], [{ slug: "velvet-sofa", quantity: 5, color: "navy" }, { slug: "velvet-sofa", quantity: 1 }])).toEqual([
       { slug: "velvet-sofa", quantity: 9, color: "navy" },
