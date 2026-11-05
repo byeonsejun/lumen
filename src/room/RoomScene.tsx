@@ -35,13 +35,17 @@ export function RoomScene({ layout, focused = null, onPick, lights = "on", touch
   const size = Math.max(W, D);
   const camera = useThree((s) => s.camera);
   const fill = useRef<(PointLight | null)[]>([]);
+  const glows = useRef<(PointLight | null)[]>([]);
   const focusSpot = useRef<SpotLight>(null);
   const spots = useRef<(SpotLight | null)[]>([]);
   const started = useRef<number | null>(null);
   const target = useMemo(() => new Vector3(0, 0.5, -0.2), []);
 
-  // 가구별 조명은 바닥 가구 중 앞에서부터 최대 6개
-  const spotFor = useMemo(() => placements.filter((p) => p.level !== "surface").slice(0, MAX_SPOTS), [placements]);
+  // 가구별 조명은 바닥 가구 중 앞에서부터 최대 6개.
+  // 천장 펜던트는 빼고 갓 안에 작은 빛을 둔다 — 펜던트 자리에 위에서 스포트를 내리면 바로 아래 탁자가
+  // 탁자 몫의 스포트까지 두 번 받아 하얗게 날아갔다
+  const spotFor = useMemo(() => placements.filter((p) => p.level === "floor").slice(0, MAX_SPOTS), [placements]);
+  const glowFor = useMemo(() => placements.filter((p) => p.level === "ceiling"), [placements]);
   // 같은 가구가 여러 개여도 전부 비추도록 (첫 번째 것만 비추던 문제)
   const beam = useMemo(() => focusBeam(placements, focused), [placements, focused]);
 
@@ -60,10 +64,12 @@ export function RoomScene({ layout, focused = null, onPick, lights = "on", touch
     const dim = focused ? 0.3 : 1;
 
     fill.current.forEach((l) => l && (l.intensity = k(l.intensity, 3.2 * roomOn * dim)));
+    glows.current.forEach((l) => l && (l.intensity = k(l.intensity, 2.4 * roomOn * dim)));
     spots.current.forEach((s, i) => {
       if (!s) return;
       const p = spotFor[i];
-      const on = lights === "off" ? 0 : seq ? (t > (i + 1) * SEQ_STEP ? 1 : 0) : focused ? 0 : 0.6;
+      // 차례로 켜지는 연출도 끝 밝기는 평소(0.6)와 같다 — 1 이면 흰 상판이 하얗게 날아갔다
+      const on = lights === "off" ? 0 : seq ? (t > (i + 1) * SEQ_STEP ? 0.6 : 0) : focused ? 0 : 0.6;
       s.intensity = k(s.intensity, (focused === `${p.slug}|${p.color ?? ""}` ? 0 : 60) * on);
     });
     if (focusSpot.current) {
@@ -107,6 +113,17 @@ export function RoomScene({ layout, focused = null, onPick, lights = "on", touch
           intensity={0}
           castShadow={preset.shadows && i < 2}
           shadow-mapSize={[preset.shadowMapSize, preset.shadowMapSize]}
+        />
+      ))}
+      {glowFor.map((p, i) => (
+        <pointLight
+          key={`glow-${p.slug}#${p.instance}`}
+          ref={(el) => void (glows.current[i] = el)}
+          position={[p.position[0], p.position[1] + 0.15, p.position[2]]}
+          color="#ffcf94"
+          intensity={0}
+          distance={2.6}
+          decay={2}
         />
       ))}
       <spotLight ref={focusSpot} angle={0.4} penumbra={0.7} color="#ffe2bd" intensity={0} castShadow={preset.shadows} />
