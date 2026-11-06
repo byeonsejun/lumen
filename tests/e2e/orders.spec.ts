@@ -38,9 +38,10 @@ test("주문 내역엔 결제 완료만", async ({ page }) => {
   await page.getByRole("button", { name: /결제하기/ }).click();
   await expect(page).toHaveURL(/reason=amount-mismatch/, { timeout: 20_000 });
   await page.goto("/orders");
-  await expect(page.getByTestId("order-row")).toHaveCount(1);
-  await expect(page.getByTestId("order-row")).toContainText("Ember 3인 소파");
-  await page.getByTestId("order-row").click();
+  const rows = page.getByRole("main").getByTestId("order-row"); // 숨은 스트리밍 사본 제외 — 아래 '빈 안내' 참고
+  await expect(rows).toHaveCount(1);
+  await expect(rows).toContainText("Ember 3인 소파");
+  await rows.click();
   await expect(page).toHaveURL(new RegExp(`/orders/${paid}$`));
   await expect(page.getByText("카드(시뮬레이션)")).toBeVisible();
 });
@@ -48,7 +49,8 @@ test("주문 내역엔 결제 완료만", async ({ page }) => {
 test("주문이 없으면 빈 안내", async ({ page }) => {
   await loginAsDemo(page);
   await page.goto("/orders");
-  await expect(page.getByText("아직 주문한 가구가 없어요")).toBeVisible();
+  // 스트리밍된 내용이 자리를 바꾸기 직전엔 숨은 사본이 body 끝에 잠깐 같이 있다 — main 안에서만 찾는다
+  await expect(page.getByRole("main").getByText("아직 주문한 가구가 없어요")).toBeVisible();
 });
 
 test("남의 주문은 404", async ({ browser }) => {
