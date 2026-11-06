@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { type NextFetchEvent, type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getProduct } from "@/catalog/query";
 import { db } from "@/server/db";
@@ -12,7 +12,7 @@ const notFound = (url: string) => NextResponse.rewrite(new URL("/_not-found", ur
  * - 주문서 · 주문 내역은 로그인 필요 → /login?callbackUrl=...
  * - 남의 주문 · 없는 주문 → 404
  */
-export const proxy = auth(async (request) => {
+const gate = auth(async (request) => {
   const { pathname, search } = request.nextUrl;
 
   if (pathname.startsWith("/products/")) {
@@ -36,5 +36,22 @@ export const proxy = auth(async (request) => {
   }
   return NextResponse.next();
 });
+
+/**
+ * auth() 래퍼는 응답마다 세션 쿠키를 새 만료로 다시 심는다. 그런데 헤더의 '내 주문' 프리패치가
+ * 로그아웃 요청보다 먼저 출발해 늦게 도착하면, 그 쿠키가 방금 지운 세션을 되살려 로그아웃이 안 됐다.
+ * 여기선 세션을 읽기만 한다 — 만료 연장은 페이지마다 부르는 /api/auth/session 이 맡는다
+ */
+export async function proxy(request: NextRequest, event: NextFetchEvent) {
+  // 래퍼 타입은 라우트 핸들러용으로 잡혀 있지만, 미들웨어로 부르면 늘 Response 를 돌려준다
+  const res = (await gate(request, event as never)) as Response;
+  const cookies = res.headers.getSetCookie();
+  const keep = cookies.filter((c) => !/^(__Secure-)?authjs\.session-token(\.\d+)?=/.test(c));
+  if (keep.length === cookies.length) return res;
+  const out = new Response(res.body, res);
+  out.headers.delete("set-cookie");
+  for (const c of keep) out.headers.append("set-cookie", c);
+  return out;
+}
 
 export const config = { matcher: ["/products/:slug", "/checkout", "/checkout/:path*", "/orders", "/orders/:path*"] };
