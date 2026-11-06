@@ -33,7 +33,7 @@ export function acceptWindow(index: number): boolean {
 /**
  * 한 번 30fps 아래로 떨어진 단계는 한동안 다시 오르지 않는다.
  * 없으면 GPU 가 약한 기기에서 2단계 25fps → 1단계 60fps → 다시 2단계 … 를 4초마다 되풀이해
- * 그림자 · 해상도가 계속 깜빡였다(저사양 시뮬레이션 측정, docs/perf/lowend.md).
+ * 그림자 · 해상도가 계속 깜빡였다.
  * 처음엔 15초, 같은 단계가 또 실패하면 두 배씩 늘린다
  */
 const BLOCK_BASE_MS = 15_000;

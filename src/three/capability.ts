@@ -8,7 +8,7 @@ type Env = {
 
 /**
  * GPU 가 없는 기기도 WebGL2 는 "된다" — 브라우저가 CPU 로 그리는 소프트웨어 렌더러를 내주기 때문이다.
- * 그러면 최저 품질에서도 쇼룸이 7fps 라(docs/perf/lowend.md) 3D 대신 사진을 보여 준다
+ * 그러면 최저 품질에서도 쇼룸이 7fps 라(헤드리스 SwiftShader 로 쟀다) 3D 대신 사진을 보여 준다
  */
 const SOFTWARE_RENDERER = /swiftshader|llvmpipe|softpipe|lavapipe|basic render driver|software rasterizer/i;
 export function isSoftwareRenderer(name: string | null | undefined): boolean {
