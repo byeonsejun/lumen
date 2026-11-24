@@ -140,6 +140,16 @@ DB 마이그레이션은 열을 더하고 기본키만 바꾸게 짜서, 기존 
 
 만드는 동안 문제를 가장 많이 잡아낸 건 테스트가 아니라 스크린샷이었습니다. 테스트가 다 통과해도 화면을 찍어 보면 천장 조명이 바닥에 묻혀 있었고, 가구 이름표가 서로 겹쳐 있었고, 처음 지어 둔 상품 설명이 실제 모델과 달랐습니다. 검은 가죽 소파를 "브라운 패브릭"이라고 써 놓은 식이었습니다.
 
+## 검색 노출
+
+운영 사이트의 Lighthouse SEO는 이 작업 전에도 이미 100이었습니다(13.4.1, 모바일, 2026-11-25, `/`와 `/products/ember-sofa`). 그래서 이번 작업은 점수를 올리려는 게 아니라, 점수가 재지 않는 부분을 채우려는 것이었습니다. 점수는 제목이 있는지, 설명이 있는지 정도만 보고, 검색 결과에 어떤 모습으로 나오는지와 공유했을 때 어떻게 보이는지는 보지 않습니다.
+
+넣은 것은 `robots.txt`, 24개 주소를 담은 사이트맵, 페이지마다 따로 정한 canonical과 설명, 그리고 링크를 붙였을 때 뜨는 제목 · 설명 · 주소와 1200×630 공유 이미지(`public/og.png`)입니다. 상품 상세에는 가격과 판매 상태를 담은 구조화 데이터(Product와 Offer, 빵부스러기)를 넣었고, 홈에는 WebSite를 넣었습니다. AI 검색이 읽을 `/llms.txt`는 사이트맵과 같은 상품 데이터에서 만들어서 둘이 어긋나지 않습니다. 구조화 데이터의 가격은 화면에 보이는 가격과 같은 값에서 나오고, e2e 테스트가 둘이 같은지 확인합니다.
+
+장바구니, 결제, 주문, 로그인은 검색에 나올 이유가 없으니 빼야 했습니다. `robots.txt`에서 막으면 될 것 같지만, 막으면 검색 엔진이 그 페이지를 열어 보지 못해서 안에 적어 둔 noindex도 읽지 못합니다. 다른 곳에서 걸린 링크가 있으면 주소만 색인에 남을 수 있습니다. 그래서 `robots.txt`는 `/api/`만 막고, 비공개 화면은 열어 보게 둔 채 noindex를 달았습니다. 로그인하지 않고 `/checkout`이나 `/orders`를 열면 `/login`으로 보내는데, 그 도착지인 `/login`도 noindex입니다. 미리보기 배포(Vercel preview)는 반대로 `robots.txt`가 사이트 전체를 막아서, 작업 중인 주소가 검색에 올라가지 않습니다.
+
+상품 구조화 데이터에는 이미지를 넣지 않았습니다. 이 사이트의 상품은 사진이 아니라 3D 모델뿐이고, 없는 사진을 지어 넣거나 모델 스크린샷을 상품 사진인 것처럼 내보내는 건 실제와 다른 정보를 주는 일이라고 봤습니다. 검증은 validator.schema.org로 `/`와 `/products/ember-sofa`를 돌렸고 오류 0, 경고 0이었습니다. 로컬에서 빌드해 `/products/ember-sofa`에 Lighthouse를 두 번 돌렸을 때도 SEO 100에 실패한 감사는 없었습니다.
+
 ## 실행
 
 ```bash
@@ -151,7 +161,7 @@ npm run dev
 - `?tier=0|1|2`로 품질을 고정하고, `?adaptive=off`로 자동 조절을 끕니다.
 - `?renderer=webgl2|none`으로 렌더러를 강제로 바꿀 수 있습니다.
 - 로그인과 장바구니, 결제는 DB(Postgres)가 필요합니다. `.env.local`에 `DATABASE_URL`, `AUTH_SECRET`, 그리고 `PAYMENT_SIMULATION=true`를 넣으면 토스 결제창 없이 결제 흐름을 끝까지 돌려 볼 수 있습니다. 시뮬레이션은 운영 환경에서는 켜지지 않습니다.
-- 검사는 `npm run check`(lint · 타입 · 단위 테스트 109개), `npm run test:db`(DB 통합 테스트 28개), `npm run test:e2e`(Playwright 75개)입니다.
+- 검사는 `npm run check`(lint · 타입 · 단위 테스트 147개), `npm run test:db`(DB 통합 테스트 28개), `npm run test:e2e`(Playwright 103개)입니다.
 
 **스택** Next.js 16 · React 19 · TypeScript · three.js 0.187(WebGPURenderer, TSL) · React Three Fiber 9 · drei · zustand · Tailwind CSS 4 · Auth.js 5 · Prisma 7 · Neon Postgres · 토스페이먼츠 · Vitest · Playwright · Vercel
 
