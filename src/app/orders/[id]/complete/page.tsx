@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { getMyOrder } from "@/orders/queries";
 import { CompleteView } from "@/orders/ui/CompleteView";
 
-export const metadata: Metadata = { title: "주문 완료 — LUMEN" };
+export const metadata: Metadata = { title: "주문 완료", robots: { index: false, follow: false } };
 
 type Params = Promise<{ id: string }>;
 

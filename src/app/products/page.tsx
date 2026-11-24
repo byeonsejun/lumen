@@ -4,7 +4,12 @@ import { Suspense } from "react";
 import { CATEGORY_LABEL, getProducts, type Category } from "@/catalog/query";
 import { ProductCard } from "@/product/ProductCard";
 
-export const metadata: Metadata = { title: "Shop — LUMEN" };
+// 카테고리 필터(?category=)가 붙은 주소도 정본은 /products — 같은 목록의 부분집합이라 따로 색인하지 않는다
+export const metadata: Metadata = {
+  title: "Shop",
+  description: "의자 · 소파 · 테이블 · 선반 · 침대 · 조명까지, 3D로 둘러보고 고르는 LUMEN 가구 컬렉션",
+  alternates: { canonical: "/products" },
+};
 
 type SearchParams = Promise<{ category?: string | string[] }>;
 

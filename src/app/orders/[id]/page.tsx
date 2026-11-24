@@ -6,7 +6,7 @@ import { formatPrice } from "@/catalog/query";
 import { getMyOrder } from "@/orders/queries";
 import { ColorBadge } from "@/catalog/ColorBadge";
 
-export const metadata: Metadata = { title: "주문 상세 — LUMEN" };
+export const metadata: Metadata = { title: "주문 상세", robots: { index: false, follow: false } };
 
 type Params = Promise<{ id: string }>;
 const dateTime = (d: Date | null) => (d ? new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul" }).format(d) : "-");

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "개인정보처리방침 — LUMEN" };
+export const metadata: Metadata = {
+  title: "개인정보처리방침",
+  description: "LUMEN 이 로그인 · 주문 · 테스트 결제 과정에서 어떤 정보를 얼마나 보관하는지 안내합니다.",
+  alternates: { canonical: "/privacy" },
+};
 
 const ISSUES = "https://github.com/byeonsejun/lumen/issues";
 

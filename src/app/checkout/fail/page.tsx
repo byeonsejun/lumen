@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { FailMessage } from "@/checkout/FailMessage";
 
-export const metadata: Metadata = { title: "결제 실패 — LUMEN" };
+export const metadata: Metadata = { title: "결제 실패", robots: { index: false, follow: false } };
 
 export default function CheckoutFailPage() {
   return (
