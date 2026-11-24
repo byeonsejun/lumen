@@ -161,3 +161,25 @@ test("상품 목록 · 개인정보 화면에는 구조화 데이터가 없다",
     await expect(page.locator('script[type="application/ld+json"]'), path).toHaveCount(0);
   }
 });
+
+// AI 검색용 안내 문서. 상품 목록이 사이트맵과 어긋나면 안 되고, robots 가 막아서도 안 된다
+test("/llms.txt 가 text/plain 으로 내려가고 상품 링크 수가 사이트맵과 같다", async ({ request }) => {
+  const res = await request.get("/llms.txt");
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toContain("text/plain");
+  const body = await res.text();
+  expect(body.startsWith("# LUMEN\n")).toBe(true);
+
+  const sitemap = await (await request.get("/sitemap.xml")).text();
+  const sitemapProducts = sitemap.match(/<loc>[^<]*\/products\/[^<]+<\/loc>/g) ?? [];
+  const llmsProducts = body.split("\n").filter((l) => l.startsWith("- [") && l.includes(`](${SITE_URL}/products/`));
+  expect(llmsProducts.length).toBeGreaterThan(0);
+  expect(llmsProducts).toHaveLength(sitemapProducts.length);
+});
+
+test("robots.txt 가 /llms.txt 를 막지 않는다", async ({ request }) => {
+  const robotsTxt = await (await request.get("/robots.txt")).text();
+  const disallowed = robotsTxt.split("\n").filter((l) => /^disallow:/i.test(l)).map((l) => l.split(":")[1].trim());
+  expect(disallowed).not.toContain("/");
+  expect(disallowed.some((d) => d !== "" && "/llms.txt".startsWith(d))).toBe(false);
+});
