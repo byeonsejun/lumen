@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { jsonLdScript, websiteJsonLd } from "@/seo/jsonld";
 import { ogFor } from "@/seo/share";
 import { getFeatured } from "@/catalog/query";
 import { Showroom } from "@/showroom/Showroom";
@@ -7,5 +8,10 @@ import { Showroom } from "@/showroom/Showroom";
 export const metadata: Metadata = { alternates: { canonical: "/" }, openGraph: ogFor("/") };
 
 export default function Home() {
-  return <Showroom products={getFeatured()} />;
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(websiteJsonLd()) }} />
+      <Showroom products={getFeatured()} />
+    </>
+  );
 }

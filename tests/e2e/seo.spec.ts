@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { getProducts } from "../../src/catalog/query";
+import { formatPrice, getProducts } from "../../src/catalog/query";
 import { SITE_URL } from "../../src/seo/site";
 import { cartSettled, loginAsDemo } from "./helpers";
 
@@ -116,5 +116,48 @@ test("로그인한 뒤 열리는 주문 화면도 모두 noindex", async ({ page
   for (const path of ["/orders", `/orders/${id}`]) {
     await page.goto(path);
     expect(await robots(page), path).toContain("noindex");
+  }
+});
+
+// 구조화 데이터는 화면에 보이는 값과 어긋나면 안 된다 — 특히 가격
+type LdNode = { "@type": string; url?: string; offers?: { price: number; priceCurrency: string; availability: string }; itemListElement?: { position: number }[] };
+const ldJson = async (page: Page) =>
+  (await page.locator('script[type="application/ld+json"]').allTextContents()).map((t) => JSON.parse(t) as LdNode);
+
+test("상품 상세의 구조화 데이터 가격이 화면 가격과 같다", async ({ page }) => {
+  const p = getProducts().find((x) => x.slug === "ember-sofa")!;
+  await page.goto(`/products/${p.slug}`);
+  const shown = page.getByText(formatPrice(p.priceKRW), { exact: true });
+  await expect(shown).toBeVisible();
+  const visible = Number(((await shown.textContent()) ?? "").replace(/[^0-9]/g, ""));
+
+  const [product, crumbs, ...rest] = await ldJson(page);
+  expect(rest).toHaveLength(0);
+  expect(product["@type"]).toBe("Product");
+  expect(product.offers!.price).toBe(visible);
+  expect(product.offers!.priceCurrency).toBe("KRW");
+  expect(product.offers!.availability).toBe("https://schema.org/InStock");
+  expect(product.url).toBe(`${SITE_URL}/products/${p.slug}`);
+  expect("image" in product).toBe(false);
+  expect(crumbs["@type"]).toBe("BreadcrumbList");
+  expect(crumbs.itemListElement!.map((i) => i.position)).toEqual([1, 2, 3]);
+});
+
+test("없는 상품 주소에는 구조화 데이터가 없다", async ({ page }) => {
+  const res = await page.goto("/products/없는-상품");
+  expect(res!.status()).toBe(404);
+  await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(0);
+});
+
+test("홈에는 WebSite 구조화 데이터만 있다", async ({ page }) => {
+  await page.goto("/");
+  const types = (await ldJson(page)).map((d) => d["@type"]);
+  expect(types).toEqual(["WebSite"]);
+});
+
+test("상품 목록 · 개인정보 화면에는 구조화 데이터가 없다", async ({ page }) => {
+  for (const path of ["/products", "/privacy"]) {
+    await page.goto(path);
+    await expect(page.locator('script[type="application/ld+json"]'), path).toHaveCount(0);
   }
 });
