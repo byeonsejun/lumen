@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CATEGORY_LABEL, formatPrice, getProduct, getProducts } from "@/catalog/query";
 import { ProductPurchase } from "@/product/ProductPurchase";
+import { ogFor } from "@/seo/share";
 import { ProductViewer } from "@/product/ProductViewer";
 
 type Params = Promise<{ slug: string }>;
@@ -15,8 +16,14 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;
   const product = getProduct(slug);
-  if (!product) return { title: "LUMEN" };
-  return { title: product.name, description: product.description, alternates: { canonical: `/products/${product.slug}` } };
+  // 템플릿("%s — LUMEN")을 건너뛴다 — 안 그러면 "LUMEN — LUMEN"
+  if (!product) return { title: { absolute: "LUMEN" } };
+  return {
+    title: product.name,
+    description: product.description,
+    alternates: { canonical: `/products/${product.slug}` },
+    openGraph: ogFor(`/products/${product.slug}`),
+  };
 }
 
 export default async function ProductPage({ params }: { params: Params }) {

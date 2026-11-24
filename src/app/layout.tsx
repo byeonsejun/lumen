@@ -8,6 +8,7 @@ import { CartToast } from "@/cart/ui/CartToast";
 import "./globals.css";
 import { NAV_ITEM } from "@/auth-ui/nav-item";
 import { isPreviewDeploy } from "@/seo/indexing";
+import { ogBase, OG_IMAGE } from "@/seo/share";
 import { SITE_URL } from "@/seo/site";
 
 const sans = Noto_Sans_KR({ variable: "--font-sans-kr", subsets: ["latin"], weight: ["300", "400", "600"] });
@@ -15,7 +16,6 @@ const sans = Noto_Sans_KR({ variable: "--font-sans-kr", subsets: ["latin"], weig
 const serif = Noto_Serif_KR({ variable: "--font-serif-kr", subsets: ["latin"], weight: ["300", "400"], display: "swap" });
 
 const DESCRIPTION = "조명 아래에서 가구를 3D로 둘러보는 가구 쇼핑몰";
-const OG_IMAGE = { url: "/og.png", width: 1200, height: 630, alt: "어두운 쇼룸에서 조명 아래 놓인 3D 가구" };
 
 export const metadata: Metadata = {
   // 상대 경로(정본 주소 · og:image)를 운영 도메인 기준 절대 주소로 풀어 준다
@@ -23,7 +23,8 @@ export const metadata: Metadata = {
   // 페이지는 "Shop" 처럼 이름만 적는다 — 사이트 이름 접미어는 여기서 한 번만 붙인다
   title: { default: "LUMEN — 3D 가구 쇼룸", template: "%s — LUMEN" },
   description: DESCRIPTION,
-  openGraph: { type: "website", siteName: "LUMEN", locale: "ko_KR", description: DESCRIPTION, images: [OG_IMAGE] },
+  // 공유 카드의 title · description 은 비워 둔다 — 페이지마다 자기 제목 · 설명으로 채워지게
+  openGraph: ogBase,
   twitter: { card: "summary_large_image", images: [OG_IMAGE] },
   // 미리보기 배포는 통째로 색인에서 뺀다. robots 는 하위 페이지가 정하면 통째로 덮이므로(병합 안 됨) 공개 페이지는 건드리지 않는다
   ...(isPreviewDeploy(process.env.VERCEL_ENV) && { robots: { index: false, follow: false } }),

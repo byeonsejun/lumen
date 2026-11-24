@@ -21,6 +21,8 @@ for (const [path, canonical] of PUBLIC) {
     await page.goto(path);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", canonical);
     expect(((await meta(page, "description").getAttribute("content")) ?? "").trim().length).toBeGreaterThan(0);
+    // 공유 카드의 주소는 정본과 같다
+    await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", canonical);
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", `${SITE_URL}/og.png`);
     await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
     expect(await robots(page)).not.toContain("noindex");
@@ -32,6 +34,24 @@ test("제목에 사이트 이름이 한 번만 붙는다", async ({ page }) => {
   await expect(page).toHaveTitle("Shop — LUMEN");
   await page.goto("/products/ember-sofa");
   await expect(page).toHaveTitle(/^Ember .* — LUMEN$/);
+});
+
+// layout 에 고정 문구를 두면 모든 페이지가 같은 제목 · 설명으로 공유된다 — 페이지 자기 것이 나와야 한다
+for (const path of ["/products/ember-sofa", "/privacy", "/products", "/room", "/"]) {
+  test(`${path}: 공유 카드 제목 · 설명이 그 페이지의 것이다`, async ({ page }) => {
+    await page.goto(path);
+    const description = await meta(page, "description").getAttribute("content");
+    await expect(page.locator('meta[property="og:description"]')).toHaveAttribute("content", description!);
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", await page.title());
+    await expect(page.locator('meta[name="twitter:description"]')).toHaveAttribute("content", description!);
+    await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute("content", await page.title());
+  });
+}
+
+test("없는 상품 주소의 제목은 LUMEN 한 번만", async ({ page }) => {
+  const res = await page.goto("/products/no-such-sofa");
+  expect(res!.status()).toBe(404);
+  await expect(page).toHaveTitle(/^(?!LUMEN — LUMEN).*/);
 });
 
 test("카테고리 필터가 붙어도 정본 주소는 /products", async ({ page }) => {
