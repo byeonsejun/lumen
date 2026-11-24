@@ -15,7 +15,7 @@ const sans = Noto_Sans_KR({ variable: "--font-sans-kr", subsets: ["latin"], weig
 // 제목 글꼴 — 어두운 갤러리에 놓인 가구 이름표처럼. 본문 · 버튼 · 숫자는 산세리프 그대로
 const serif = Noto_Serif_KR({ variable: "--font-serif-kr", subsets: ["latin"], weight: ["300", "400"], display: "swap" });
 
-const DESCRIPTION = "조명 아래에서 가구를 3D로 둘러보는 가구 쇼핑몰";
+const DESCRIPTION = "조명 아래에서 가구를 3D로 둘러보는 가구 쇼핑몰(포트폴리오 데모)";
 
 export const metadata: Metadata = {
   // 상대 경로(정본 주소 · og:image)를 운영 도메인 기준 절대 주소로 풀어 준다

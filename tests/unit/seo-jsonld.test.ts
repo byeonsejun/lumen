@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { CATEGORY_LABEL, getProduct } from "@/catalog/query";
-import { jsonLdScript, productJsonLd, websiteJsonLd } from "@/seo/jsonld";
+import { CATEGORY_LABEL, getProduct, getProducts } from "@/catalog/query";
+import { posterUrl } from "@/three/models";
+import { jsonLdScript, productImageUrl, productJsonLd, websiteJsonLd } from "@/seo/jsonld";
 import { SITE_URL } from "@/seo/site";
 
 const sofa = getProduct("ember-sofa")!;
@@ -33,8 +34,17 @@ describe("productJsonLd", () => {
     expect(typeof product.offers.price).toBe("number");
   });
 
-  it("사진이 없으므로 image 키를 두지 않는다", () => {
-    expect("image" in product).toBe(false);
+  it("image 는 화면에 뜨는 포스터와 같은 그림이고 절대 주소다", () => {
+    expect(product.image).toBe(posterUrl(sofa.polyhavenId, 1200));
+    expect(product.image).toBe(productImageUrl(sofa));
+    expect(product.image).toMatch(/^https:\/\//);
+    expect(product.image).toContain(sofa.polyhavenId);
+  });
+
+  it("모든 상품의 image 가 서로 다른 절대 주소다", () => {
+    const images = getProducts().map((p) => productJsonLd(p)[0].image);
+    for (const image of images) expect(image).toMatch(/^https:\/\/[^/]+\//);
+    expect(new Set(images).size).toBe(images.length);
   });
 
   it("BreadcrumbList 는 홈 → Shop → 상품 순서다", () => {
@@ -53,9 +63,9 @@ describe("websiteJsonLd", () => {
       "@context": "https://schema.org",
       "@type": "WebSite",
       name: "LUMEN",
-      url: `${SITE_URL}/`,
+      url: SITE_URL,
       inLanguage: "ko",
-      publisher: { "@type": "Organization", name: "LUMEN", url: `${SITE_URL}/` },
+      publisher: { "@type": "Organization", name: "LUMEN", url: SITE_URL },
     });
   });
 });

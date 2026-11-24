@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CATEGORY_LABEL, formatPrice, getProduct, getProducts } from "@/catalog/query";
 import { ProductPurchase } from "@/product/ProductPurchase";
-import { jsonLdScript, productJsonLd } from "@/seo/jsonld";
+import { jsonLdScript, productImageUrl, productJsonLd } from "@/seo/jsonld";
 import { ogFor } from "@/seo/share";
 import { ProductViewer } from "@/product/ProductViewer";
 
@@ -17,13 +17,18 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;
   const product = getProduct(slug);
-  // 템플릿("%s — LUMEN")을 건너뛴다 — 안 그러면 "LUMEN — LUMEN"
+  // 없는 slug 는 src/proxy.ts 가 여기까지 오기 전에 404 로 돌려 보내 실제로는 닿지 않는다.
+  // 그래도 남겨 두는 건 방어용 — 닿더라도 템플릿("%s — LUMEN")을 건너뛰어야 "LUMEN — LUMEN" 이 안 된다
   if (!product) return { title: { absolute: "LUMEN" } };
+  const path = `/products/${product.slug}`;
+  // 상품마다 자기 사진으로 공유되게 한다. 페이지가 openGraph · twitter 를 지정하면 layout 것은 통째로 대체되므로 images 도 여기서 다시 준다
+  const image = { url: productImageUrl(product), alt: product.name };
   return {
     title: product.name,
     description: product.description,
-    alternates: { canonical: `/products/${product.slug}` },
-    openGraph: ogFor(`/products/${product.slug}`),
+    alternates: { canonical: path },
+    openGraph: { ...ogFor(path), images: [image] },
+    twitter: { card: "summary_large_image", images: [image] },
   };
 }
 
