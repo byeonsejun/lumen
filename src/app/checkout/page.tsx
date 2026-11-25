@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CheckoutView } from "@/checkout/CheckoutView";
 
-export const metadata: Metadata = { title: "주문서 — LUMEN" };
+export const metadata: Metadata = { title: "주문서", robots: { index: false, follow: false } };
 
 // 로그인 확인은 src/proxy.ts 에서 응답 전에 한다
 export default function CheckoutPage() {

@@ -6,7 +6,7 @@ import { LoginButtons } from "@/auth-ui/LoginButtons";
 import { getProduct } from "@/catalog/query";
 import { posterUrl } from "@/three/models";
 
-export const metadata: Metadata = { title: "로그인 — LUMEN" };
+export const metadata: Metadata = { title: "로그인", robots: { index: false, follow: false } };
 
 // 버튼 하나만 덩그러니 있던 화면 — 쇼룸과 같은 "어둠 속 조명 하나"를 옆에 둔다
 const pendant = getProduct("dusk-pendant")!;

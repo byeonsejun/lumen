@@ -7,14 +7,27 @@ import { CartBadge } from "@/cart/ui/CartBadge";
 import { CartToast } from "@/cart/ui/CartToast";
 import "./globals.css";
 import { NAV_ITEM } from "@/auth-ui/nav-item";
+import { isPreviewDeploy } from "@/seo/indexing";
+import { ogBase, OG_IMAGE } from "@/seo/share";
+import { SITE_URL } from "@/seo/site";
 
 const sans = Noto_Sans_KR({ variable: "--font-sans-kr", subsets: ["latin"], weight: ["300", "400", "600"] });
 // 제목 글꼴 — 어두운 갤러리에 놓인 가구 이름표처럼. 본문 · 버튼 · 숫자는 산세리프 그대로
 const serif = Noto_Serif_KR({ variable: "--font-serif-kr", subsets: ["latin"], weight: ["300", "400"], display: "swap" });
 
+const DESCRIPTION = "조명 아래에서 가구를 3D로 둘러보는 가구 쇼핑몰(포트폴리오 데모)";
+
 export const metadata: Metadata = {
-  title: "LUMEN — 3D 가구 쇼룸",
-  description: "조명 아래에서 가구를 3D로 둘러보는 가구 쇼핑몰",
+  // 상대 경로(정본 주소 · og:image)를 운영 도메인 기준 절대 주소로 풀어 준다
+  metadataBase: new URL(SITE_URL),
+  // 페이지는 "Shop" 처럼 이름만 적는다 — 사이트 이름 접미어는 여기서 한 번만 붙인다
+  title: { default: "LUMEN — 3D 가구 쇼룸", template: "%s — LUMEN" },
+  description: DESCRIPTION,
+  // 공유 카드의 title · description 은 비워 둔다 — 페이지마다 자기 제목 · 설명으로 채워지게
+  openGraph: ogBase,
+  twitter: { card: "summary_large_image", images: [OG_IMAGE] },
+  // 미리보기 배포는 통째로 색인에서 뺀다. robots 는 하위 페이지가 정하면 통째로 덮이므로(병합 안 됨) 공개 페이지는 건드리지 않는다
+  ...(isPreviewDeploy(process.env.VERCEL_ENV) && { robots: { index: false, follow: false } }),
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

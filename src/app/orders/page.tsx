@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { formatPrice } from "@/catalog/query";
 import { listMyPaidOrders } from "@/orders/queries";
 
-export const metadata: Metadata = { title: "내 주문 — LUMEN" };
+export const metadata: Metadata = { title: "내 주문", robots: { index: false, follow: false } };
 
 const date = (d: Date | null) => (d ? new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium", timeZone: "Asia/Seoul" }).format(d) : "");
 
